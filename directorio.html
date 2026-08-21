@@ -1,0 +1,513 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Directorio de Miembros — Enlace360</title>
+<style>
+:root{--accent:#7F77DD;--accent-dark:#4A4499;--accent-light:#EEEDFE;--borde:rgba(0,0,0,.1);--texto:#1C1C1A;--texto-suave:#6B6B5E}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#F5F4FB;min-height:100vh;color:var(--texto)}
+.app{max-width:760px;margin:0 auto;padding:1rem}
+.screen{display:none}.screen.active{display:block}
+
+.nav{background:var(--accent-dark);color:#fff;padding:.9rem 1.25rem;border-radius:14px;margin-bottom:1.25rem;display:flex;justify-content:space-between;align-items:center}
+.nav-brand{font-size:17px;font-weight:600}
+.nav-sub{font-size:11px;opacity:.75;margin-top:2px}
+.nav-btn{background:rgba(255,255,255,.15);border:none;color:#fff;padding:6px 14px;border-radius:8px;font-size:12px;cursor:pointer}
+.nav-btn:hover{background:rgba(255,255,255,.25)}
+
+.hero{background:linear-gradient(135deg,var(--accent-dark),var(--accent));border-radius:14px;padding:1.5rem;color:#fff;margin-bottom:1.25rem}
+.hero h1{font-size:22px;font-weight:600;margin-bottom:4px}
+.hero p{font-size:13px;opacity:.85}
+
+.card{background:#fff;border:0.5px solid var(--borde);border-radius:12px;padding:1.25rem;margin-bottom:1rem}
+
+.role-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:1rem}
+@media(max-width:420px){.role-grid{grid-template-columns:1fr}}
+.role-btn{padding:1.1rem;border:0.5px solid var(--borde);border-radius:12px;background:#fff;cursor:pointer;text-align:left;transition:all .15s}
+.role-btn:hover{background:var(--accent-light);border-color:var(--accent)}
+.rb-icon{font-size:24px;margin-bottom:8px}
+.rb-title{font-size:14px;font-weight:500;display:block;margin-bottom:2px}
+.rb-desc{font-size:12px;color:var(--texto-suave);display:block}
+
+.btn-primary{background:var(--accent-dark);color:#fff;border:none;padding:11px 20px;border-radius:8px;font-size:14px;font-weight:500;cursor:pointer;width:100%;margin-top:8px}
+.btn-primary:hover{background:var(--accent)}
+.btn-primary:disabled{opacity:.5;cursor:not-allowed}
+.btn-back{background:none;border:0.5px solid var(--borde);color:var(--texto-suave);padding:7px 14px;border-radius:8px;font-size:13px;cursor:pointer;margin-bottom:1rem;display:inline-flex;align-items:center;gap:5px}
+.btn-sm{padding:6px 12px;font-size:12px;border-radius:6px;border:none;cursor:pointer;font-weight:500}
+.btn-green{background:#1D9E75;color:#fff}
+.btn-red{background:#E24B4A;color:#fff}
+.btn-outline{background:none;border:0.5px solid var(--borde);color:var(--texto-suave);padding:6px 12px;font-size:12px;border-radius:6px;cursor:pointer}
+
+.pin-wrap{max-width:280px;margin:0 auto;text-align:center;padding:1rem 0}
+.pin-wrap input{text-align:center;font-size:22px;letter-spacing:6px;font-weight:500;width:100%;padding:10px;border:0.5px solid rgba(0,0,0,.2);border-radius:8px}
+
+.form-group{margin-bottom:1rem}
+.form-group label{display:block;font-size:13px;font-weight:500;color:#444;margin-bottom:5px}
+.form-group input,.form-group select,.form-group textarea{width:100%;padding:10px 12px;border:0.5px solid rgba(0,0,0,.2);border-radius:8px;font-size:14px;color:var(--texto);background:#fff;font-family:inherit}
+.form-group input:focus,.form-group select:focus{outline:none;border-color:var(--accent)}
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+@media(max-width:480px){.form-grid{grid-template-columns:1fr}}
+
+.upload-box{border:1.5px dashed rgba(0,0,0,.15);border-radius:10px;padding:1rem;text-align:center;cursor:pointer;background:var(--accent-light);margin-bottom:8px}
+.upload-box:hover{background:#e3e1fb}
+.foto-preview{width:80px;height:80px;border-radius:50%;object-fit:cover;margin:0 auto 8px;display:none}
+
+.search-box{width:100%;padding:10px 12px;border:0.5px solid rgba(0,0,0,.2);border-radius:8px;font-size:14px;margin-bottom:1rem;font-family:inherit}
+.search-box:focus{outline:none;border-color:var(--accent)}
+
+.filtro-row{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:1rem}
+.filtro-btn{padding:5px 12px;font-size:12px;border-radius:20px;border:0.5px solid var(--borde);background:#fff;color:#555;cursor:pointer;white-space:nowrap}
+.filtro-btn.active{background:var(--accent-dark);color:#fff;border-color:var(--accent-dark)}
+
+/* Tarjetas miembro - vista pública */
+.miembros-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:12px}
+.miembro-card{background:#fff;border:0.5px solid var(--borde);border-radius:14px;padding:1.1rem;text-align:center;transition:all .15s;cursor:pointer}
+.miembro-card:hover{box-shadow:0 4px 14px rgba(0,0,0,.08);transform:translateY(-2px)}
+.miembro-foto{width:64px;height:64px;border-radius:50%;object-fit:cover;margin:0 auto 10px;background:var(--accent-light);display:flex;align-items:center;justify-content:center;font-size:22px;font-weight:600;color:var(--accent-dark)}
+.miembro-nombre{font-size:14px;font-weight:600;color:var(--texto);margin-bottom:3px}
+.miembro-cargo{font-size:12px;color:var(--accent-dark);font-weight:500;margin-bottom:2px}
+.miembro-org{font-size:11px;color:var(--texto-suave)}
+
+/* Lista admin */
+.miembro-row{background:#fff;border:0.5px solid var(--borde);border-radius:10px;padding:12px;display:flex;align-items:center;gap:12px;margin-bottom:8px;flex-wrap:wrap}
+.miembro-row .mr-foto{width:44px;height:44px;border-radius:50%;object-fit:cover;background:var(--accent-light);display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:600;color:var(--accent-dark);flex-shrink:0}
+.miembro-row .mr-info{flex:1;min-width:150px}
+.miembro-row .mr-info p{font-size:13px;font-weight:500}
+.miembro-row .mr-info span{font-size:12px;color:var(--texto-suave)}
+.miembro-row .mr-actions{display:flex;gap:6px}
+
+.stats-row{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:1rem}
+.stat{background:#fff;border:0.5px solid var(--borde);border-radius:8px;padding:10px 12px;text-align:center}
+.stat .val{font-size:22px;font-weight:600;color:var(--accent-dark)}
+.stat .lbl{font-size:11px;color:var(--texto-suave);margin-top:2px}
+
+.admin-tabs{display:flex;gap:0;margin-bottom:1rem;border:0.5px solid var(--borde);border-radius:8px;overflow:hidden}
+.admin-tab{flex:1;padding:9px;font-size:12px;font-weight:500;color:#555;cursor:pointer;background:#fff;border:none}
+.admin-tab.active{background:var(--accent-dark);color:#fff}
+
+.empty-state{text-align:center;padding:2rem;color:var(--texto-suave);font-size:14px;grid-column:1/-1}
+
+/* Perfil modal-like */
+.perfil-card{background:#fff;border:0.5px solid var(--borde);border-radius:16px;padding:1.5rem;text-align:center}
+.perfil-foto{width:100px;height:100px;border-radius:50%;object-fit:cover;margin:0 auto 14px;background:var(--accent-light);display:flex;align-items:center;justify-content:center;font-size:32px;font-weight:600;color:var(--accent-dark)}
+.perfil-nombre{font-size:20px;font-weight:600;margin-bottom:4px}
+.perfil-cargo{font-size:14px;color:var(--accent-dark);font-weight:500;margin-bottom:2px}
+.perfil-org{font-size:13px;color:var(--texto-suave);margin-bottom:1rem}
+.perfil-bio{font-size:13px;color:#555;line-height:1.6;padding-top:1rem;border-top:0.5px solid var(--borde);text-align:left}
+
+.color-row{display:flex;gap:8px;flex-wrap:wrap;margin-top:6px}
+.color-dot{width:26px;height:26px;border-radius:50%;cursor:pointer;border:2px solid transparent}
+.color-dot.sel{border-color:#1a1a18;transform:scale(1.15)}
+</style>
+</head>
+<body>
+<div class="app">
+
+<!-- INTRO -->
+<div id="screen-intro" class="screen active">
+  <nav class="nav">
+    <div><div class="nav-brand">Enlace360</div><div class="nav-sub" id="nav-titulo">Directorio de Miembros</div></div>
+    <button class="nav-btn" onclick="goTo('screen-pin')">🔐 Admin</button>
+  </nav>
+  <div class="hero">
+    <h1 id="hero-titulo">Directorio de Miembros</h1>
+    <p id="hero-desc">Encuentra y conecta con los miembros de la organización</p>
+  </div>
+  <div class="card">
+    <div class="role-grid">
+      <button class="role-btn" onclick="goTo('screen-directorio')">
+        <div class="rb-icon">🔍</div>
+        <span class="rb-title">Ver directorio</span>
+        <span class="rb-desc">Busca miembros por nombre o cargo</span>
+      </button>
+      <button class="role-btn" onclick="goTo('screen-autoregistro')">
+        <div class="rb-icon">📝</div>
+        <span class="rb-title">Registrarme</span>
+        <span class="rb-desc">Agrégate al directorio de la organización</span>
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- DIRECTORIO PÚBLICO -->
+<div id="screen-directorio" class="screen">
+  <button class="btn-back" onclick="goTo('screen-intro')">← Volver</button>
+  <div class="card">
+    <input class="search-box" type="text" id="search-publico" placeholder="🔍 Buscar por nombre o cargo..." oninput="renderDirectorioPublico()">
+    <div class="filtro-row" id="filtro-publico"></div>
+    <div class="miembros-grid" id="miembros-publico"><div class="empty-state">⏳ Cargando miembros...</div></div>
+  </div>
+</div>
+
+<!-- PERFIL INDIVIDUAL -->
+<div id="screen-perfil" class="screen">
+  <button class="btn-back" onclick="goTo('screen-directorio')">← Volver al directorio</button>
+  <div class="perfil-card" id="perfil-container"></div>
+</div>
+
+<!-- AUTOREGISTRO -->
+<div id="screen-autoregistro" class="screen">
+  <button class="btn-back" onclick="goTo('screen-intro')">← Volver</button>
+  <div class="card">
+    <p style="font-size:14px;font-weight:500;margin-bottom:1rem">Únete al directorio</p>
+    <div class="upload-box" onclick="document.getElementById('reg-foto-up').click()">
+      <img id="reg-foto-preview" class="foto-preview">
+      <div style="font-size:22px;margin-bottom:4px">📷</div>
+      <p style="font-size:13px;color:#555">Subir foto de perfil (opcional)</p>
+      <input type="file" id="reg-foto-up" accept="image/*" onchange="subirFotoReg(this)" style="display:none">
+    </div>
+    <div class="form-grid">
+      <div class="form-group" style="grid-column:1/-1"><label>Nombre completo *</label><input type="text" id="reg-nombre" placeholder="Ej. María González"></div>
+      <div class="form-group"><label>Teléfono *</label><input type="tel" id="reg-telefono" placeholder="809-000-0000"></div>
+      <div class="form-group"><label>Correo electrónico *</label><input type="email" id="reg-email" placeholder="correo@ejemplo.com"></div>
+      <div class="form-group"><label>Cargo / Posición *</label><input type="text" id="reg-cargo" placeholder="Ej. Tesorera"></div>
+      <div class="form-group"><label>Organización</label><input type="text" id="reg-org" placeholder="Ej. Cooperativa X"></div>
+      <div class="form-group" style="grid-column:1/-1"><label>Breve descripción (opcional)</label><textarea id="reg-bio" rows="3" placeholder="Cuéntanos sobre ti..."></textarea></div>
+    </div>
+    <div id="reg-error" style="color:#A32D2D;font-size:13px;margin-top:8px;display:none"></div>
+    <button class="btn-primary" id="btn-registrar" onclick="autoregistrar()">✓ Unirme al directorio</button>
+  </div>
+</div>
+
+<!-- ÉXITO -->
+<div id="screen-exito" class="screen">
+  <div class="card" style="text-align:center;background:var(--accent-light);border-color:var(--accent)">
+    <div style="font-size:40px;margin-bottom:10px">🎉</div>
+    <h3 style="font-size:18px;font-weight:600;color:var(--accent-dark);margin-bottom:6px">¡Te has unido al directorio!</h3>
+    <p style="font-size:14px;color:var(--accent-dark)">Tu perfil ya está disponible para que otros miembros te encuentren.</p>
+  </div>
+  <button class="btn-primary" style="margin-top:1rem" onclick="goTo('screen-intro')">Volver al inicio</button>
+</div>
+
+<!-- PIN -->
+<div id="screen-pin" class="screen">
+  <button class="btn-back" onclick="goTo('screen-intro')">← Volver</button>
+  <div class="card">
+    <div class="pin-wrap">
+      <div style="font-size:36px;margin-bottom:12px">🔐</div>
+      <p style="font-size:15px;font-weight:500;margin-bottom:16px">Panel de administración</p>
+      <input type="password" id="pin-input" placeholder="••••" maxlength="6" onkeyup="if(event.key==='Enter')verificarPin()">
+      <p style="font-size:12px;color:#888;margin-top:6px">PIN predeterminado: 1234</p>
+      <button class="btn-primary" onclick="verificarPin()" style="margin-top:1rem">Entrar</button>
+      <div id="pin-error" style="color:#A32D2D;font-size:13px;margin-top:8px;display:none">PIN incorrecto</div>
+    </div>
+  </div>
+</div>
+
+<!-- ADMIN -->
+<div id="screen-admin" class="screen">
+  <nav class="nav" style="margin-bottom:1.25rem">
+    <div><div class="nav-brand">Enlace360 · Directorio</div><div class="nav-sub">Panel de administración</div></div>
+    <button class="nav-btn" onclick="goTo('screen-intro')">← Salir</button>
+  </nav>
+
+  <div class="stats-row">
+    <div class="stat"><div class="val" id="stat-total">0</div><div class="lbl">Miembros</div></div>
+    <div class="stat"><div class="val" id="stat-orgs">0</div><div class="lbl">Organizaciones</div></div>
+    <div class="stat"><div class="val" id="stat-conFoto">0</div><div class="lbl">Con foto</div></div>
+  </div>
+
+  <div class="admin-tabs">
+    <button class="admin-tab active" onclick="setAdminTab('lista',this)">📋 Lista</button>
+    <button class="admin-tab" onclick="setAdminTab('agregar',this)">+ Agregar</button>
+    <button class="admin-tab" onclick="setAdminTab('config',this)">⚙️ Config</button>
+  </div>
+
+  <!-- LISTA ADMIN -->
+  <div id="tab-lista">
+    <input class="search-box" type="text" id="search-admin" placeholder="🔍 Buscar..." oninput="renderListaAdmin()">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+      <span style="font-size:12px;color:var(--texto-suave)" id="admin-status">Cargando...</span>
+      <button class="btn-outline" onclick="exportarExcel()">⬇ Exportar Excel</button>
+    </div>
+    <div id="lista-admin-container"><div class="empty-state">⏳ Cargando...</div></div>
+  </div>
+
+  <!-- AGREGAR -->
+  <div id="tab-agregar" style="display:none">
+    <div class="card">
+      <p style="font-size:14px;font-weight:500;margin-bottom:1rem">+ Agregar miembro</p>
+      <div class="upload-box" onclick="document.getElementById('adm-foto-up').click()">
+        <img id="adm-foto-preview" class="foto-preview">
+        <div style="font-size:22px;margin-bottom:4px">📷</div>
+        <p style="font-size:13px;color:#555">Subir foto de perfil (opcional)</p>
+        <input type="file" id="adm-foto-up" accept="image/*" onchange="subirFotoAdm(this)" style="display:none">
+      </div>
+      <div class="form-grid">
+        <div class="form-group" style="grid-column:1/-1"><label>Nombre completo *</label><input type="text" id="adm-nombre" placeholder="Ej. María González"></div>
+        <div class="form-group"><label>Teléfono</label><input type="tel" id="adm-telefono" placeholder="809-000-0000"></div>
+        <div class="form-group"><label>Correo electrónico</label><input type="email" id="adm-email" placeholder="correo@ejemplo.com"></div>
+        <div class="form-group"><label>Cargo / Posición</label><input type="text" id="adm-cargo" placeholder="Ej. Tesorera"></div>
+        <div class="form-group"><label>Organización</label><input type="text" id="adm-org" placeholder="Ej. Cooperativa X"></div>
+        <div class="form-group" style="grid-column:1/-1"><label>Breve descripción</label><textarea id="adm-bio" rows="3" placeholder="Información adicional..."></textarea></div>
+      </div>
+      <button class="btn-primary" onclick="agregarMiembroAdmin()">+ Agregar al directorio</button>
+      <div id="adm-ok" style="color:#085041;font-size:13px;margin-top:8px;display:none">✓ Miembro agregado</div>
+    </div>
+  </div>
+
+  <!-- CONFIG -->
+  <div id="tab-config" style="display:none">
+    <div class="card">
+      <p style="font-size:14px;font-weight:500;margin-bottom:1rem">⚙️ Configuración</p>
+      <div class="form-group"><label>Título del directorio</label><input type="text" id="cfg-titulo" placeholder="Ej. Directorio de Asociados"></div>
+      <div class="form-group"><label>Descripción</label><input type="text" id="cfg-desc" placeholder="Ej. Encuentra y conecta con los miembros"></div>
+      <div class="form-group"><label>PIN de administrador</label><input type="text" id="cfg-pin" placeholder="1234" maxlength="6"></div>
+      <div class="form-group">
+        <label>Color principal</label>
+        <div class="color-row" id="color-row"></div>
+      </div>
+      <button class="btn-primary" onclick="guardarConfig()">💾 Guardar</button>
+      <div id="cfg-ok" style="color:#085041;font-size:13px;margin-top:8px;display:none">✓ Guardado</div>
+    </div>
+    <div class="card" style="border-color:#F09595">
+      <p style="font-size:14px;font-weight:500;color:#A32D2D;margin-bottom:8px">⚠️ Zona de peligro</p>
+      <button class="btn-sm btn-red" onclick="borrarTodo()">🗑 Borrar todos los miembros</button>
+    </div>
+  </div>
+
+  <button class="btn-back" style="margin-top:1rem" onclick="goTo('screen-intro')">← Salir del panel</button>
+</div>
+
+</div>
+
+<script type="module">
+import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
+import { getDatabase, ref, push, set, onValue, update, remove } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js';
+
+const firebaseConfig = {
+  apiKey: "AIzaSyDGTP-yQGULgotUGzvsHvxJnhLI-tII2Js",
+  authDomain: "registro-eventos-dd07b.firebaseapp.com",
+  databaseURL: "https://registro-eventos-dd07b-default-rtdb.firebaseio.com",
+  projectId: "registro-eventos-dd07b",
+  storageBucket: "registro-eventos-dd07b.firebasestorage.app",
+  messagingSenderId: "329341382451",
+  appId: "1:329341382451:web:e5545731565337dab61846"
+};
+
+const COLORES = ['#7F77DD','#1a4a8a','#0F6E56','#A0522D','#E24B4A','#E07B00','#2D7D9A','#1a1a18'];
+
+const app = initializeApp(firebaseConfig);
+const db = getDatabase(app);
+
+let config = {titulo:'Directorio de Miembros', desc:'Encuentra y conecta con los miembros', pin:'1234', color:'#7F77DD'};
+let miembros = {};
+let fotoRegBase64 = '';
+let fotoAdmBase64 = '';
+let filtroPublico = 'todas';
+
+onValue(ref(db,'directorio/config'), snap=>{ if(snap.val()){ config={...config,...snap.val()}; actualizarUI(); } });
+onValue(ref(db,'directorio/miembros'), snap=>{
+  miembros = snap.val()||{};
+  renderDirectorioPublico();
+  renderListaAdmin();
+  actualizarStats();
+});
+
+function actualizarUI(){
+  document.documentElement.style.setProperty('--accent', config.color);
+  document.getElementById('hero-titulo').textContent = config.titulo;
+  document.getElementById('hero-desc').textContent = config.desc;
+  document.getElementById('nav-titulo').textContent = config.titulo;
+  const t=document.getElementById('cfg-titulo'); if(t) t.value=config.titulo||'';
+  const d=document.getElementById('cfg-desc'); if(d) d.value=config.desc||'';
+  const p=document.getElementById('cfg-pin'); if(p) p.value=config.pin||'1234';
+  renderColorRow();
+}
+
+function renderColorRow(){
+  const row = document.getElementById('color-row');
+  if(!row) return;
+  row.innerHTML = COLORES.map(c=>`<div class="color-dot ${config.color===c?'sel':''}" style="background:${c}" onclick="selColor('${c}')"></div>`).join('');
+}
+window.selColor = function(c){ config.color=c; document.documentElement.style.setProperty('--accent',c); renderColorRow(); };
+
+function toBase64(file, maxKB){
+  return new Promise((res,rej)=>{
+    if(file.size>maxKB*1024){ rej(new Error(`Máximo ${maxKB}KB`)); return; }
+    const r=new FileReader(); r.onload=e=>res(e.target.result); r.onerror=rej; r.readAsDataURL(file);
+  });
+}
+
+window.subirFotoReg = async function(input){
+  try{ fotoRegBase64 = await toBase64(input.files[0],150); const p=document.getElementById('reg-foto-preview'); p.src=fotoRegBase64; p.style.display='block'; }catch(e){ alert(e.message); }
+};
+window.subirFotoAdm = async function(input){
+  try{ fotoAdmBase64 = await toBase64(input.files[0],150); const p=document.getElementById('adm-foto-preview'); p.src=fotoAdmBase64; p.style.display='block'; }catch(e){ alert(e.message); }
+};
+
+function getIniciales(nombre){
+  return nombre.split(' ').filter(Boolean).slice(0,2).map(n=>n[0].toUpperCase()).join('');
+}
+
+function renderFiltrosPublico(){
+  const orgs = [...new Set(Object.values(miembros).map(m=>m.org).filter(Boolean))];
+  const opts = ['todas', ...orgs];
+  const el = document.getElementById('filtro-publico');
+  if(el) el.innerHTML = opts.map(o=>`<button class="filtro-btn ${filtroPublico===o?'active':''}" onclick="setFiltroPublico('${o}',this)">${o==='todas'?'Todas':o}</button>`).join('');
+}
+window.setFiltroPublico = function(o,btn){
+  filtroPublico=o;
+  document.querySelectorAll('#filtro-publico .filtro-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  renderDirectorioPublico();
+};
+
+window.renderDirectorioPublico = function(){
+  renderFiltrosPublico();
+  const q = (document.getElementById('search-publico')?.value||'').toLowerCase();
+  const lista = Object.entries(miembros).filter(([k,m])=>{
+    const orgMatch = filtroPublico==='todas' || m.org===filtroPublico;
+    const qMatch = !q || m.nombre.toLowerCase().includes(q) || (m.cargo||'').toLowerCase().includes(q);
+    return orgMatch && qMatch;
+  }).sort((a,b)=>a[1].nombre.localeCompare(b[1].nombre));
+  const el = document.getElementById('miembros-publico');
+  if(!el) return;
+  if(!lista.length){ el.innerHTML='<div class="empty-state">No se encontraron miembros</div>'; return; }
+  el.innerHTML = lista.map(([k,m])=>`
+    <div class="miembro-card" onclick="verPerfil('${k}')">
+      <div class="miembro-foto">${m.foto?`<img src="${m.foto}" style="width:100%;height:100%;border-radius:50%;object-fit:cover">`:getIniciales(m.nombre)}</div>
+      <div class="miembro-nombre">${m.nombre}</div>
+      <div class="miembro-cargo">${m.cargo||''}</div>
+      <div class="miembro-org">${m.org||''}</div>
+    </div>`).join('');
+};
+
+window.verPerfil = function(key){
+  const m = miembros[key];
+  if(!m) return;
+  document.getElementById('perfil-container').innerHTML = `
+    <div class="perfil-foto">${m.foto?`<img src="${m.foto}" style="width:100%;height:100%;border-radius:50%;object-fit:cover">`:getIniciales(m.nombre)}</div>
+    <div class="perfil-nombre">${m.nombre}</div>
+    <div class="perfil-cargo">${m.cargo||''}</div>
+    <div class="perfil-org">${m.org||''}</div>
+    ${m.bio?`<div class="perfil-bio">${m.bio}</div>`:''}
+  `;
+  goTo('screen-perfil');
+};
+
+window.autoregistrar = async function(){
+  const nombre = document.getElementById('reg-nombre').value.trim();
+  const telefono = document.getElementById('reg-telefono').value.trim();
+  const email = document.getElementById('reg-email').value.trim();
+  const cargo = document.getElementById('reg-cargo').value.trim();
+  const org = document.getElementById('reg-org').value.trim();
+  const bio = document.getElementById('reg-bio').value.trim();
+  const errDiv = document.getElementById('reg-error');
+  if(!nombre||!telefono||!email||!cargo){ errDiv.textContent='Completa los campos obligatorios (*)'; errDiv.style.display='block'; return; }
+  errDiv.style.display='none';
+  const btn = document.getElementById('btn-registrar');
+  btn.disabled=true; btn.textContent='Enviando...';
+  try{
+    await push(ref(db,'directorio/miembros'),{nombre,telefono,email,cargo,org,bio,foto:fotoRegBase64,timestamp:Date.now()});
+    ['reg-nombre','reg-telefono','reg-email','reg-cargo','reg-org','reg-bio'].forEach(id=>document.getElementById(id).value='');
+    fotoRegBase64=''; document.getElementById('reg-foto-preview').style.display='none';
+    goTo('screen-exito');
+  }catch(e){ errDiv.textContent='Error al enviar. Verifica tu conexión.'; errDiv.style.display='block'; }
+  btn.disabled=false; btn.textContent='✓ Unirme al directorio';
+};
+
+window.verificarPin = function(){
+  if(document.getElementById('pin-input').value===config.pin){
+    document.getElementById('pin-input').value='';
+    document.getElementById('pin-error').style.display='none';
+    goTo('screen-admin');
+  } else { document.getElementById('pin-error').style.display='block'; }
+};
+
+function actualizarStats(){
+  const lista = Object.values(miembros);
+  document.getElementById('stat-total').textContent = lista.length;
+  document.getElementById('stat-orgs').textContent = new Set(lista.map(m=>m.org).filter(Boolean)).size;
+  document.getElementById('stat-conFoto').textContent = lista.filter(m=>m.foto).length;
+}
+
+window.renderListaAdmin = function(){
+  const q = (document.getElementById('search-admin')?.value||'').toLowerCase();
+  const lista = Object.entries(miembros).filter(([k,m])=> !q || m.nombre.toLowerCase().includes(q) || (m.org||'').toLowerCase().includes(q))
+    .sort((a,b)=>a[1].nombre.localeCompare(b[1].nombre));
+  const el = document.getElementById('lista-admin-container');
+  const status = document.getElementById('admin-status');
+  if(status) status.textContent = `${lista.length} miembro(s) · tiempo real`;
+  if(!el) return;
+  if(!lista.length){ el.innerHTML='<div class="empty-state">No hay miembros aún</div>'; return; }
+  el.innerHTML = lista.map(([k,m])=>`
+    <div class="miembro-row">
+      <div class="mr-foto">${m.foto?`<img src="${m.foto}" style="width:100%;height:100%;border-radius:50%;object-fit:cover">`:getIniciales(m.nombre)}</div>
+      <div class="mr-info">
+        <p>${m.nombre}</p>
+        <span>${m.cargo||''} ${m.org?'· '+m.org:''}<br>${m.telefono||''} ${m.email?'· '+m.email:''}</span>
+      </div>
+      <div class="mr-actions">
+        <button class="btn-sm btn-red" onclick="eliminarMiembro('${k}')">✕</button>
+      </div>
+    </div>`).join('');
+};
+
+window.eliminarMiembro = async function(key){
+  if(confirm('¿Eliminar este miembro del directorio?')) await remove(ref(db,`directorio/miembros/${key}`));
+};
+
+window.agregarMiembroAdmin = async function(){
+  const nombre = document.getElementById('adm-nombre').value.trim();
+  if(!nombre){ alert('El nombre es obligatorio'); return; }
+  const telefono = document.getElementById('adm-telefono').value.trim();
+  const email = document.getElementById('adm-email').value.trim();
+  const cargo = document.getElementById('adm-cargo').value.trim();
+  const org = document.getElementById('adm-org').value.trim();
+  const bio = document.getElementById('adm-bio').value.trim();
+  await push(ref(db,'directorio/miembros'),{nombre,telefono,email,cargo,org,bio,foto:fotoAdmBase64,timestamp:Date.now()});
+  ['adm-nombre','adm-telefono','adm-email','adm-cargo','adm-org','adm-bio'].forEach(id=>document.getElementById(id).value='');
+  fotoAdmBase64=''; document.getElementById('adm-foto-preview').style.display='none';
+  const ok=document.getElementById('adm-ok');
+  ok.style.display='block'; setTimeout(()=>ok.style.display='none',2000);
+};
+
+window.guardarConfig = async function(){
+  const cfg = {
+    titulo: document.getElementById('cfg-titulo').value||config.titulo,
+    desc: document.getElementById('cfg-desc').value||config.desc,
+    pin: document.getElementById('cfg-pin').value||config.pin,
+    color: config.color||'#7F77DD'
+  };
+  await set(ref(db,'directorio/config'),cfg);
+  const ok=document.getElementById('cfg-ok');
+  ok.style.display='block'; setTimeout(()=>ok.style.display='none',2000);
+};
+
+window.borrarTodo = async function(){
+  if(confirm('⚠️ ¿Borrar TODOS los miembros del directorio?'))
+    if(confirm('Confirma: ¿borrar todo?')) await remove(ref(db,'directorio/miembros'));
+};
+
+window.exportarExcel = function(){
+  const lista = Object.values(miembros).sort((a,b)=>a.nombre.localeCompare(b.nombre));
+  if(!lista.length){ alert('No hay miembros para exportar'); return; }
+  const headers = ['Nombre','Teléfono','Email','Cargo','Organización','Bio'];
+  const rows = lista.map(m=>[m.nombre,m.telefono||'',m.email||'',m.cargo||'',m.org||'',m.bio||'']);
+  const csv = [headers,...rows].map(r=>r.map(c=>`"${c}"`).join(',')).join('\n');
+  const blob = new Blob(['\ufeff'+csv],{type:'text/csv;charset=utf-8'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a'); a.href=url;
+  a.download = `directorio-miembros-${Date.now()}.csv`;
+  a.click(); URL.revokeObjectURL(url);
+};
+
+window.setAdminTab = function(tab,btn){
+  ['lista','agregar','config'].forEach(t=>document.getElementById('tab-'+t).style.display=t===tab?'block':'none');
+  document.querySelectorAll('.admin-tab').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+};
+
+window.goTo = function(id){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  window.scrollTo(0,0);
+};
+
+actualizarUI();
+</script>
+</body>
+</html>

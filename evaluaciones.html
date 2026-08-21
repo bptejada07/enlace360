@@ -1,0 +1,680 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Evaluación de Ponentes y Talleres</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#f5f5f2;min-height:100vh;color:#1a1a18}
+.app{max-width:720px;margin:0 auto;padding:1rem}
+.screen{display:none}.screen.active{display:block}
+
+/* Hero */
+.hero{border-radius:16px;overflow:hidden;margin-bottom:1.25rem;position:relative;min-height:140px;background:var(--accent,#1a4a8a);display:flex;flex-direction:column;justify-content:flex-end}
+.hero-overlay{position:absolute;inset:0;background:linear-gradient(to bottom,transparent 20%,rgba(0,0,0,.65) 100%)}
+.hero-img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:.3}
+.hero-content{position:relative;padding:1.25rem;color:#fff}
+.hero-content h1{font-size:20px;font-weight:600;margin-bottom:3px}
+.hero-content p{font-size:13px;opacity:.8}
+.hero-logo{width:52px;height:52px;border-radius:8px;object-fit:contain;background:#fff;padding:5px;margin-bottom:10px;display:block}
+
+/* Cards */
+.card{background:#fff;border:0.5px solid rgba(0,0,0,.1);border-radius:12px;padding:1.25rem;margin-bottom:1rem}
+
+/* Role buttons */
+.role-btns{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:1rem}
+@media(max-width:420px){.role-btns{grid-template-columns:1fr}}
+.role-btn{padding:1rem;border:0.5px solid rgba(0,0,0,.12);border-radius:12px;background:#fff;cursor:pointer;text-align:left;transition:all .15s}
+.role-btn:hover{background:#f0f4ff;border-color:#93b4f5}
+.role-btn .rb-icon{font-size:22px;margin-bottom:6px}
+.role-btn .rb-title{font-size:14px;font-weight:500;color:#1a1a18;display:block;margin-bottom:2px}
+.role-btn .rb-desc{font-size:12px;color:#888;display:block;line-height:1.4}
+
+/* Botones */
+.btn-primary{color:#fff;border:none;padding:11px 20px;border-radius:8px;font-size:14px;font-weight:500;cursor:pointer;width:100%;margin-top:8px;background:var(--accent,#1a4a8a)}
+.btn-primary:hover{filter:brightness(.9)}
+.btn-primary:disabled{opacity:.5;cursor:not-allowed}
+.btn-back{background:none;border:0.5px solid rgba(0,0,0,.15);color:#555;padding:7px 14px;border-radius:8px;font-size:13px;cursor:pointer;margin-bottom:1rem;display:inline-flex;align-items:center;gap:5px}
+.btn-sm{padding:6px 12px;font-size:12px;border-radius:6px;border:none;cursor:pointer;font-weight:500}
+.btn-green{background:#1D9E75;color:#fff}
+.btn-red{background:#E24B4A;color:#fff}
+.btn-outline{background:none;border:0.5px solid rgba(0,0,0,.2);color:#555;padding:6px 12px;font-size:12px;border-radius:6px;cursor:pointer}
+
+/* PIN */
+.pin-wrap{max-width:280px;margin:0 auto;text-align:center}
+.pin-wrap input{text-align:center;font-size:22px;letter-spacing:6px;font-weight:500;width:100%;padding:10px;border:0.5px solid rgba(0,0,0,.2);border-radius:8px}
+
+/* Selector de ponente */
+.ponente-list{display:flex;flex-direction:column;gap:8px;margin-top:8px}
+.ponente-card{background:#fff;border:0.5px solid rgba(0,0,0,.1);border-radius:10px;padding:12px 16px;cursor:pointer;transition:all .15s;display:flex;justify-content:space-between;align-items:center}
+.ponente-card:hover{background:#f0f4ff;border-color:var(--accent,#1a4a8a)}
+.ponente-card .pc-name{font-size:14px;font-weight:500;color:#1a1a18}
+.ponente-card .pc-tema{font-size:12px;color:#888;margin-top:2px}
+.ponente-card .pc-count{font-size:11px;color:var(--accent,#1a4a8a);font-weight:500}
+
+/* Formulario de evaluación */
+.eval-section{margin-bottom:1.5rem}
+.eval-section h3{font-size:13px;font-weight:600;color:#444;text-transform:uppercase;letter-spacing:.05em;margin-bottom:12px}
+.eval-item{margin-bottom:1.25rem}
+.eval-item label{display:block;font-size:14px;font-weight:500;color:#1a1a18;margin-bottom:10px;line-height:1.5}
+
+/* Estrellas */
+.stars{display:flex;gap:6px;flex-wrap:wrap}
+.star{font-size:28px;cursor:pointer;opacity:.3;transition:all .15s;user-select:none}
+.star.active{opacity:1}
+.star:hover{transform:scale(1.1)}
+
+/* Escala numérica */
+.num-scale{display:flex;gap:4px;flex-wrap:wrap}
+.num-btn{width:36px;height:36px;border-radius:8px;border:0.5px solid rgba(0,0,0,.15);background:#fff;font-size:13px;font-weight:500;cursor:pointer;transition:all .15s;display:flex;align-items:center;justify-content:center}
+.num-btn:hover{border-color:var(--accent,#1a4a8a);color:var(--accent,#1a4a8a)}
+.num-btn.active{background:var(--accent,#1a4a8a);color:#fff;border-color:var(--accent,#1a4a8a)}
+
+/* Caras */
+.faces{display:flex;gap:10px;flex-wrap:wrap}
+.face-btn{display:flex;flex-direction:column;align-items:center;gap:4px;padding:10px 14px;border-radius:10px;border:0.5px solid rgba(0,0,0,.12);background:#fff;cursor:pointer;transition:all .15s;font-size:11px;color:#888}
+.face-btn .face-emoji{font-size:26px}
+.face-btn:hover{border-color:var(--accent,#1a4a8a)}
+.face-btn.active{border-color:var(--accent,#1a4a8a);background:#f0f4ff;color:var(--accent,#1a4a8a);font-weight:500}
+
+/* Textarea */
+textarea{width:100%;padding:10px 12px;border:0.5px solid rgba(0,0,0,.2);border-radius:8px;font-size:14px;color:#1a1a18;background:#fff;resize:vertical;font-family:inherit;line-height:1.6;min-height:90px}
+textarea:focus{outline:none;border-color:var(--accent,#1a4a8a)}
+
+/* Éxito */
+.success-box{background:#EEF4FF;border:0.5px solid #93b4f5;border-radius:12px;padding:1.5rem;text-align:center}
+.success-box h3{font-size:18px;font-weight:500;margin-bottom:6px;color:#1a4a8a}
+.success-box p{font-size:14px;line-height:1.6;color:#2d5faa}
+
+/* Admin panel */
+.live-badge{background:#E24B4A;color:#fff;font-size:11px;font-weight:500;padding:4px 10px;border-radius:20px;display:inline-flex;align-items:center;gap:5px}
+.live-dot{width:6px;height:6px;background:#fff;border-radius:50%;animation:blink 1.2s infinite}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
+
+.stats-row{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:1rem}
+.stat{background:#fff;border:0.5px solid rgba(0,0,0,.1);border-radius:8px;padding:10px 12px;text-align:center}
+.stat .val{font-size:22px;font-weight:500;color:#1a1a18}
+.stat .lbl{font-size:11px;color:#888;margin-top:2px}
+
+.admin-tabs{display:flex;gap:0;margin-bottom:1rem;border:0.5px solid rgba(0,0,0,.15);border-radius:8px;overflow:hidden}
+.admin-tab{flex:1;padding:8px 4px;font-size:12px;font-weight:500;color:#555;cursor:pointer;background:#fff;border:none;transition:background .15s}
+.admin-tab.active{background:var(--accent,#1a4a8a);color:#fff}
+
+/* Resultados */
+.result-card{background:#fff;border:0.5px solid rgba(0,0,0,.1);border-radius:12px;padding:1.25rem;margin-bottom:1rem}
+.result-card h3{font-size:15px;font-weight:600;color:#1a1a18;margin-bottom:4px}
+.result-card .rc-tema{font-size:12px;color:#888;margin-bottom:1rem}
+.result-item{margin-bottom:14px}
+.result-item .ri-label{font-size:13px;color:#555;margin-bottom:6px;display:flex;justify-content:space-between;align-items:center}
+.result-item .ri-label span{font-weight:600;color:var(--accent,#1a4a8a)}
+.bar-bg{background:#f0f0ee;border-radius:20px;height:8px;overflow:hidden}
+.bar-fill{height:100%;border-radius:20px;background:var(--accent,#1a4a8a);transition:width .5s ease}
+.stars-avg{font-size:20px;color:#f59e0b;letter-spacing:2px}
+.comment-list{display:flex;flex-direction:column;gap:8px;margin-top:8px}
+.comment-item{background:#f5f5f2;border-radius:8px;padding:10px 12px;font-size:13px;color:#555;line-height:1.6}
+
+/* Config */
+.form-group{margin-bottom:1rem}
+label{display:block;font-size:13px;font-weight:500;color:#444;margin-bottom:5px}
+input,select{width:100%;padding:10px 12px;border:0.5px solid rgba(0,0,0,.2);border-radius:8px;font-size:14px;color:#1a1a18;background:#fff;font-family:inherit}
+input:focus,select:focus{outline:none;border-color:var(--accent,#1a4a8a)}
+
+.ponente-admin-card{background:#fff;border:0.5px solid rgba(0,0,0,.1);border-radius:10px;padding:12px;display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:8px;flex-wrap:wrap}
+.add-row{display:flex;gap:8px;margin-top:8px;flex-wrap:wrap}
+.add-row input{flex:1;min-width:140px}
+
+.color-row{display:flex;gap:8px;flex-wrap:wrap;margin-top:6px}
+.color-dot{width:26px;height:26px;border-radius:50%;cursor:pointer;border:2px solid transparent;transition:transform .15s}
+.color-dot:hover{transform:scale(1.15)}
+.color-dot.selected{border-color:#1a1a18;transform:scale(1.15)}
+
+.filtro-row{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:1rem}
+.filtro-btn{padding:5px 12px;font-size:12px;border-radius:20px;border:0.5px solid rgba(0,0,0,.15);background:#fff;color:#555;cursor:pointer}
+.filtro-btn.active{background:var(--accent,#1a4a8a);color:#fff;border-color:var(--accent,#1a4a8a)}
+
+.empty-state{text-align:center;padding:2rem;color:#888;font-size:14px}
+.upload-box{border:1.5px dashed rgba(0,0,0,.2);border-radius:10px;padding:1rem;text-align:center;cursor:pointer;transition:background .15s;margin-bottom:8px}
+.upload-box:hover{background:#f0f4ff}
+</style>
+</head>
+<body>
+<div class="app">
+
+<!-- INTRO -->
+<div id="screen-intro" class="screen active">
+  <div class="hero" id="hero-main">
+    <img id="hero-bg" class="hero-img" src="" style="display:none" alt="">
+    <div class="hero-overlay"></div>
+    <div class="hero-content">
+      <img id="hero-logo" class="hero-logo" src="" style="display:none" alt="logo">
+      <h1 id="evento-titulo">Evaluación de Ponentes</h1>
+      <p id="evento-subtitulo">Comparte tu experiencia sobre esta actividad</p>
+    </div>
+  </div>
+  <div class="card">
+    <p style="font-size:14px;color:#555;margin-bottom:1rem">¿Qué deseas hacer?</p>
+    <div class="role-btns">
+      <button class="role-btn" onclick="goTo('screen-ponentes')">
+        <div class="rb-icon">📝</div>
+        <span class="rb-title">Evaluar ponente</span>
+        <span class="rb-desc">Califica la sesión o taller al que asististe</span>
+      </button>
+      <button class="role-btn" onclick="goTo('screen-pin')">
+        <div class="rb-icon">📊</div>
+        <span class="rb-title">Ver resultados</span>
+        <span class="rb-desc">Panel de administrador con resultados en vivo</span>
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- SELECCIONAR PONENTE -->
+<div id="screen-ponentes" class="screen">
+  <button class="btn-back" onclick="goTo('screen-intro')">← Volver</button>
+  <div class="hero" id="hero-eval" style="min-height:90px">
+    <div class="hero-overlay"></div>
+    <div class="hero-content" style="padding:.75rem 1.25rem">
+      <h1 style="font-size:16px">Selecciona el ponente o taller</h1>
+    </div>
+  </div>
+  <div class="card">
+    <p style="font-size:13px;color:#555;margin-bottom:10px">¿A cuál sesión asististe?</p>
+    <div class="ponente-list" id="ponente-list">
+      <div class="empty-state">⏳ Cargando ponentes...</div>
+    </div>
+  </div>
+</div>
+
+<!-- FORMULARIO EVALUACIÓN -->
+<div id="screen-eval" class="screen">
+  <button class="btn-back" onclick="goTo('screen-ponentes')">← Cambiar ponente</button>
+  <div class="card" id="eval-header-card" style="background:var(--accent,#1a4a8a);color:#fff">
+    <div style="font-size:11px;opacity:.8;margin-bottom:4px;text-transform:uppercase;letter-spacing:.08em">Evaluando</div>
+    <div id="eval-ponente-nombre" style="font-size:18px;font-weight:600;margin-bottom:2px"></div>
+    <div id="eval-ponente-tema" style="font-size:13px;opacity:.8"></div>
+  </div>
+  <div id="eval-form"></div>
+  <div id="eval-error" style="color:#A32D2D;font-size:13px;margin-bottom:8px;display:none"></div>
+  <button class="btn-primary" id="btn-evaluar" onclick="enviarEvaluacion()">✓ Enviar evaluación</button>
+</div>
+
+<!-- ÉXITO -->
+<div id="screen-exito" class="screen">
+  <div class="success-box">
+    <div style="font-size:40px;margin-bottom:10px">🙌</div>
+    <h3>¡Gracias por tu evaluación!</h3>
+    <p>Tu opinión ayuda a mejorar la calidad de nuestros eventos.</p>
+  </div>
+  <button class="btn-primary" style="margin-top:1rem" onclick="goTo('screen-intro')">Evaluar otro ponente</button>
+</div>
+
+<!-- PIN -->
+<div id="screen-pin" class="screen">
+  <button class="btn-back" onclick="goTo('screen-intro')">← Volver</button>
+  <div class="card">
+    <div class="pin-wrap">
+      <div style="font-size:32px;margin-bottom:12px">🔐</div>
+      <p style="font-size:14px;color:#555;margin-bottom:1rem">PIN de administrador</p>
+      <input type="password" id="pin-input" placeholder="••••" maxlength="6" onkeyup="if(event.key==='Enter')verificarPin()">
+      <p style="font-size:12px;color:#888;margin-top:6px">PIN predeterminado: 1234</p>
+      <button class="btn-primary" onclick="verificarPin()" style="margin-top:1rem">Entrar</button>
+      <div id="pin-error" style="color:#A32D2D;font-size:13px;margin-top:8px;display:none">PIN incorrecto</div>
+    </div>
+  </div>
+</div>
+
+<!-- ADMIN -->
+<div id="screen-admin" class="screen">
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem;flex-wrap:wrap;gap:8px">
+    <h3 style="font-size:15px;font-weight:500">Panel de resultados</h3>
+    <div class="live-badge"><div class="live-dot"></div> En vivo</div>
+  </div>
+
+  <div class="stats-row">
+    <div class="stat"><div class="val" id="stat-eval">0</div><div class="lbl">Evaluaciones</div></div>
+    <div class="stat"><div class="val" id="stat-ponentes-count">0</div><div class="lbl">Ponentes</div></div>
+    <div class="stat"><div class="val" id="stat-promedio">—</div><div class="lbl">Prom. general</div></div>
+  </div>
+
+  <div class="admin-tabs">
+    <button class="admin-tab active" onclick="setTab('resultados',this)">📊 Resultados</button>
+    <button class="admin-tab" onclick="setTab('comentarios',this)">💬 Comentarios</button>
+    <button class="admin-tab" onclick="setTab('config',this)">⚙️ Config</button>
+  </div>
+
+  <!-- RESULTADOS -->
+  <div id="tab-resultados">
+    <div class="filtro-row" id="filtro-ponentes"></div>
+    <div id="resultados-container"><div class="empty-state">⏳ Esperando evaluaciones...</div></div>
+  </div>
+
+  <!-- COMENTARIOS -->
+  <div id="tab-comentarios" style="display:none">
+    <div class="filtro-row" id="filtro-ponentes-com"></div>
+    <div id="comentarios-container"><div class="empty-state">No hay comentarios aún</div></div>
+  </div>
+
+  <!-- CONFIG -->
+  <div id="tab-config" style="display:none">
+
+    <div class="card">
+      <p style="font-size:14px;font-weight:500;margin-bottom:1rem">📋 Datos del evento</p>
+      <div class="form-group"><label>Título del evento</label><input type="text" id="cfg-titulo" placeholder="Ej. Foro de Innovación 2025"></div>
+      <div class="form-group"><label>Subtítulo o descripción</label><input type="text" id="cfg-subtitulo" placeholder="Ej. Comparte tu experiencia"></div>
+      <div class="form-group"><label>PIN de administrador</label><input type="text" id="cfg-pin" placeholder="1234" maxlength="6"></div>
+      <div class="form-group">
+        <label>Color principal</label>
+        <div class="color-row" id="color-row"></div>
+        <input type="color" id="cfg-color-custom" style="margin-top:8px;width:40px;height:32px;border:none;cursor:pointer;border-radius:6px">
+      </div>
+      <div class="form-group">
+        <label>Logo</label>
+        <div class="upload-box" onclick="document.getElementById('logo-up').click()">
+          <div style="font-size:20px;margin-bottom:4px">🖼️</div>
+          <p style="font-size:13px;color:#555">Subir logo (máx. 200KB)</p>
+          <input type="file" id="logo-up" accept="image/*" onchange="subirImagen('logo-up','cfg-logo-preview',200)" style="display:none">
+          <img id="cfg-logo-preview" style="max-height:50px;margin-top:6px;display:none">
+        </div>
+      </div>
+      <button class="btn-primary" onclick="guardarConfig()">💾 Guardar</button>
+      <div id="cfg-ok" style="color:#085041;font-size:13px;margin-top:8px;display:none">✓ Guardado</div>
+    </div>
+
+    <div class="card">
+      <p style="font-size:14px;font-weight:500;margin-bottom:4px">👤 Ponentes y talleres</p>
+      <p style="font-size:12px;color:#888;margin-bottom:12px">Agrega los ponentes o talleres a evaluar</p>
+      <div id="ponentes-admin-list"></div>
+      <div class="add-row">
+        <input type="text" id="new-ponente-nombre" placeholder="Nombre del ponente">
+        <input type="text" id="new-ponente-tema" placeholder="Tema o taller">
+        <button class="btn-sm btn-green" onclick="agregarPonente()">+ Agregar</button>
+      </div>
+    </div>
+
+    <div class="card">
+      <p style="font-size:14px;font-weight:500;margin-bottom:4px">❓ Preguntas de evaluación</p>
+      <p style="font-size:12px;color:#888;margin-bottom:12px">Preguntas base activas + tus preguntas adicionales</p>
+      <div id="preguntas-admin-list"></div>
+      <div class="add-row" style="flex-direction:column;gap:8px">
+        <input type="text" id="new-preg-texto" placeholder="Texto de la pregunta">
+        <div style="display:flex;gap:8px">
+          <select id="new-preg-tipo" style="flex:1">
+            <option value="estrellas">⭐ Estrellas (1-5)</option>
+            <option value="escala">🔢 Escala numérica (1-10)</option>
+            <option value="caras">😊 Caras (4 opciones)</option>
+            <option value="texto">💬 Comentario abierto</option>
+          </select>
+          <button class="btn-sm btn-green" onclick="agregarPregunta()">+ Agregar</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="card" style="border-color:#F09595">
+      <p style="font-size:14px;font-weight:500;color:#A32D2D;margin-bottom:8px">⚠️ Zona de peligro</p>
+      <button class="btn-sm btn-red" onclick="borrarEvaluaciones()">🗑 Borrar todas las evaluaciones</button>
+    </div>
+  </div>
+
+  <button class="btn-back" style="margin-top:1rem" onclick="goTo('screen-intro')">← Salir</button>
+</div>
+
+</div>
+
+<script type="module">
+import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
+import { getDatabase, ref, push, set, onValue, update, remove } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js';
+
+const firebaseConfig = {
+  apiKey: "AIzaSyDGTP-yQGULgotUGzvsHvxJnhLI-tII2Js",
+  authDomain: "registro-eventos-dd07b.firebaseapp.com",
+  databaseURL: "https://registro-eventos-dd07b-default-rtdb.firebaseio.com",
+  projectId: "registro-eventos-dd07b",
+  storageBucket: "registro-eventos-dd07b.firebasestorage.app",
+  messagingSenderId: "329341382451",
+  appId: "1:329341382451:web:e5545731565337dab61846"
+};
+
+const COLORES = ['#1a4a8a','#0F6E56','#7F77DD','#E24B4A','#E07B00','#2D7D9A','#5C3D8F','#1a1a18'];
+
+const PREGUNTAS_BASE = [
+  {id:'p1', texto:'Claridad en la presentación del contenido', tipo:'estrellas', base:true},
+  {id:'p2', texto:'Dominio del tema por parte del ponente', tipo:'estrellas', base:true},
+  {id:'p3', texto:'Organización y metodología de la sesión', tipo:'estrellas', base:true},
+  {id:'p4', texto:'Calidad de los materiales y recursos utilizados', tipo:'estrellas', base:true},
+  {id:'p5', texto:'¿Recomendarías esta sesión a otras personas?', tipo:'caras', base:true},
+  {id:'p6', texto:'Evaluación general de la sesión (1-10)', tipo:'escala', base:true},
+  {id:'p7', texto:'Comentarios y sugerencias', tipo:'texto', base:true},
+];
+
+const app = initializeApp(firebaseConfig);
+const db = getDatabase(app);
+
+let config = {titulo:'Evaluación de Ponentes', subtitulo:'Comparte tu experiencia', pin:'1234', color:'#1a4a8a', logo:'', ponentes:[], preguntasExtra:[]};
+let evaluaciones = {};
+let ponenteActual = null;
+let respuestasActuales = {};
+let filtroResultados = 'todos';
+let filtroComentarios = 'todos';
+
+// Firebase listeners
+onValue(ref(db,'eval/config'), snap=>{ if(snap.val()){ config={...config,...snap.val()}; actualizarUI(); } });
+onValue(ref(db,'eval/evaluaciones'), snap=>{ evaluaciones=snap.val()||{}; renderResultados(); renderComentarios(); actualizarStats(); });
+
+function actualizarUI(){
+  document.documentElement.style.setProperty('--accent', config.color||'#1a4a8a');
+  document.getElementById('evento-titulo').textContent = config.titulo||'Evaluación de Ponentes';
+  document.getElementById('evento-subtitulo').textContent = config.subtitulo||'';
+  document.getElementById('hero-main').style.background = config.color||'#1a4a8a';
+  document.getElementById('hero-eval').style.background = config.color||'#1a4a8a';
+  if(config.logo){ const l=document.getElementById('hero-logo'); l.src=config.logo; l.style.display='block'; }
+  // Config form
+  const t=document.getElementById('cfg-titulo'); if(t) t.value=config.titulo||'';
+  const s=document.getElementById('cfg-subtitulo'); if(s) s.value=config.subtitulo||'';
+  const p=document.getElementById('cfg-pin'); if(p) p.value=config.pin||'1234';
+  renderColorRow();
+  renderPonenteList();
+  renderPonenteAdminList();
+  renderPreguntasAdmin();
+  renderFiltros();
+}
+
+function renderColorRow(){
+  const row=document.getElementById('color-row');
+  if(!row) return;
+  row.innerHTML=COLORES.map(c=>`<div class="color-dot ${config.color===c?'selected':''}" style="background:${c}" onclick="selColor('${c}')"></div>`).join('');
+}
+
+window.selColor=function(c){ config.color=c; document.documentElement.style.setProperty('--accent',c); document.getElementById('hero-main').style.background=c; document.getElementById('hero-eval').style.background=c; renderColorRow(); };
+document.getElementById('cfg-color-custom').addEventListener('input',function(){ window.selColor(this.value); });
+
+function toBase64(file,maxKB){ return new Promise((res,rej)=>{ if(file.size>maxKB*1024){rej(new Error(`Máximo ${maxKB}KB`));return;} const r=new FileReader(); r.onload=e=>res(e.target.result); r.onerror=rej; r.readAsDataURL(file); }); }
+
+window.subirImagen=async function(inputId,previewId,maxKB){
+  const input=document.getElementById(inputId);
+  if(!input.files[0]) return;
+  try{ const b64=await toBase64(input.files[0],maxKB); config.logo=b64; const pr=document.getElementById(previewId); pr.src=b64; pr.style.display='block'; }catch(e){ alert(e.message); }
+};
+
+function renderPonenteList(){
+  const el=document.getElementById('ponente-list');
+  const ponentes=config.ponentes||[];
+  if(!ponentes.length){ el.innerHTML='<div class="empty-state">No hay ponentes configurados aún. El administrador debe agregarlos.</div>'; return; }
+  el.innerHTML=ponentes.map(p=>{
+    const evals=Object.values(evaluaciones).filter(e=>e.ponenteId===p.id);
+    return `<div class="ponente-card" onclick="seleccionarPonente('${p.id}')">
+      <div><div class="pc-name">${p.nombre}</div><div class="pc-tema">${p.tema||''}</div></div>
+      <div class="pc-count">${evals.length} eval${evals.length!==1?'s':''}</div>
+    </div>`;
+  }).join('');
+}
+
+window.seleccionarPonente=function(id){
+  ponenteActual = (config.ponentes||[]).find(p=>p.id===id);
+  if(!ponenteActual) return;
+  document.getElementById('eval-ponente-nombre').textContent = ponenteActual.nombre;
+  document.getElementById('eval-ponente-tema').textContent = ponenteActual.tema||'';
+  respuestasActuales = {};
+  renderEvalForm();
+  goTo('screen-eval');
+};
+
+function getPreguntas(){
+  return [...PREGUNTAS_BASE, ...(config.preguntasExtra||[])];
+}
+
+function renderEvalForm(){
+  const preguntas = getPreguntas();
+  const form = document.getElementById('eval-form');
+  form.innerHTML = preguntas.map((p,i)=>{
+    if(p.tipo==='estrellas') return `
+      <div class="card eval-item" data-id="${p.id}">
+        <label>${i+1}. ${p.texto}</label>
+        <div class="stars" id="stars-${p.id}">
+          ${[1,2,3,4,5].map(n=>`<span class="star" data-val="${n}" onclick="setEstrella('${p.id}',${n})">⭐</span>`).join('')}
+        </div>
+      </div>`;
+    if(p.tipo==='escala') return `
+      <div class="card eval-item" data-id="${p.id}">
+        <label>${i+1}. ${p.texto}</label>
+        <div class="num-scale">
+          ${[1,2,3,4,5,6,7,8,9,10].map(n=>`<button class="num-btn" data-val="${n}" onclick="setEscala('${p.id}',${n})">${n}</button>`).join('')}
+        </div>
+      </div>`;
+    if(p.tipo==='caras') return `
+      <div class="card eval-item" data-id="${p.id}">
+        <label>${i+1}. ${p.texto}</label>
+        <div class="faces">
+          <button class="face-btn" onclick="setCara('${p.id}',1)"><span class="face-emoji">😞</span>Malo</button>
+          <button class="face-btn" onclick="setCara('${p.id}',2)"><span class="face-emoji">😐</span>Regular</button>
+          <button class="face-btn" onclick="setCara('${p.id}',3)"><span class="face-emoji">😊</span>Bueno</button>
+          <button class="face-btn" onclick="setCara('${p.id}',4)"><span class="face-emoji">🤩</span>Excelente</button>
+        </div>
+      </div>`;
+    if(p.tipo==='texto') return `
+      <div class="card eval-item" data-id="${p.id}">
+        <label>${i+1}. ${p.texto}</label>
+        <textarea id="texto-${p.id}" placeholder="Escribe tus comentarios aquí..." oninput="respuestasActuales['${p.id}']=this.value"></textarea>
+      </div>`;
+    return '';
+  }).join('');
+}
+
+window.setEstrella=function(id,val){
+  respuestasActuales[id]=val;
+  document.querySelectorAll(`#stars-${id} .star`).forEach(s=>{ s.classList.toggle('active', parseInt(s.dataset.val)<=val); });
+};
+window.setEscala=function(id,val){
+  respuestasActuales[id]=val;
+  document.querySelectorAll(`[id^="stars-${id}"] .num-btn, .num-scale .num-btn`).forEach(b=>b.classList.remove('active'));
+  const items=document.querySelectorAll(`#eval-form .eval-item[data-id="${id}"] .num-btn`);
+  items.forEach(b=>{ b.classList.toggle('active', parseInt(b.dataset.val)===val); });
+};
+window.setCara=function(id,val){
+  respuestasActuales[id]=val;
+  const btns=document.querySelectorAll(`#eval-form .eval-item[data-id="${id}"] .face-btn`);
+  btns.forEach((b,i)=>{ b.classList.toggle('active', i+1===val); });
+};
+
+window.enviarEvaluacion=async function(){
+  const preguntas=getPreguntas().filter(p=>p.tipo!=='texto');
+  const faltantes=preguntas.filter(p=>respuestasActuales[p.id]===undefined);
+  const errDiv=document.getElementById('eval-error');
+  if(faltantes.length>0){ errDiv.textContent='Por favor responde todas las preguntas antes de enviar'; errDiv.style.display='block'; return; }
+  errDiv.style.display='none';
+  const btn=document.getElementById('btn-evaluar');
+  btn.disabled=true; btn.textContent='Enviando...';
+  try{
+    await push(ref(db,'eval/evaluaciones'),{
+      ponenteId: ponenteActual.id,
+      ponenteNombre: ponenteActual.nombre,
+      ponenteTema: ponenteActual.tema||'',
+      respuestas: respuestasActuales,
+      timestamp: Date.now()
+    });
+    goTo('screen-exito');
+  }catch(e){ errDiv.textContent='Error al enviar. Verifica tu conexión.'; errDiv.style.display='block'; }
+  btn.disabled=false; btn.textContent='✓ Enviar evaluación';
+};
+
+window.verificarPin=function(){
+  if(document.getElementById('pin-input').value===config.pin){
+    document.getElementById('pin-input').value='';
+    document.getElementById('pin-error').style.display='none';
+    goTo('screen-admin');
+  } else { document.getElementById('pin-error').style.display='block'; }
+};
+
+function actualizarStats(){
+  const evals=Object.values(evaluaciones);
+  document.getElementById('stat-eval').textContent=evals.length;
+  document.getElementById('stat-ponentes-count').textContent=(config.ponentes||[]).length;
+  if(evals.length){
+    const promedios=evals.map(e=>{
+      const vals=Object.entries(e.respuestas||{}).filter(([k,v])=>typeof v==='number').map(([k,v])=>v);
+      return vals.length?vals.reduce((a,b)=>a+b,0)/vals.length:null;
+    }).filter(v=>v!==null);
+    const prom=promedios.length?promedios.reduce((a,b)=>a+b,0)/promedios.length:0;
+    document.getElementById('stat-promedio').textContent=prom.toFixed(1);
+  }
+}
+
+function renderFiltros(){
+  const ponentes=config.ponentes||[];
+  const opts=[{id:'todos',nombre:'Todos'},...ponentes];
+  const mkFiltro=(containerId,activo,fn)=>{
+    const el=document.getElementById(containerId);
+    if(el) el.innerHTML=opts.map(p=>`<button class="filtro-btn ${activo===p.id?'active':''}" onclick="${fn}('${p.id}',this)">${p.nombre}</button>`).join('');
+  };
+  mkFiltro('filtro-ponentes',filtroResultados,'setFiltroR');
+  mkFiltro('filtro-ponentes-com',filtroComentarios,'setFiltroC');
+}
+
+window.setFiltroR=function(id,btn){ filtroResultados=id; document.querySelectorAll('#filtro-ponentes .filtro-btn').forEach(b=>b.classList.remove('active')); btn.classList.add('active'); renderResultados(); };
+window.setFiltroC=function(id,btn){ filtroComentarios=id; document.querySelectorAll('#filtro-ponentes-com .filtro-btn').forEach(b=>b.classList.remove('active')); btn.classList.add('active'); renderComentarios(); };
+
+function calcPromedioPreg(evals,pregId){
+  const vals=evals.map(e=>e.respuestas?.[pregId]).filter(v=>typeof v==='number');
+  return vals.length?vals.reduce((a,b)=>a+b,0)/vals.length:null;
+}
+
+function renderResultados(){
+  const container=document.getElementById('resultados-container');
+  if(!container) return;
+  const ponentes=filtroResultados==='todos'?(config.ponentes||[]):(config.ponentes||[]).filter(p=>p.id===filtroResultados);
+  if(!ponentes.length){ container.innerHTML='<div class="empty-state">No hay ponentes configurados</div>'; return; }
+  const preguntas=getPreguntas().filter(p=>p.tipo!=='texto');
+  container.innerHTML=ponentes.map(p=>{
+    const evals=Object.values(evaluaciones).filter(e=>e.ponenteId===p.id);
+    if(!evals.length) return `<div class="result-card"><h3>${p.nombre}</h3><div class="rc-tema">${p.tema||''}</div><div class="empty-state" style="padding:1rem">Sin evaluaciones aún</div></div>`;
+    const items=preguntas.map(q=>{
+      const prom=calcPromedioPreg(evals,q.id);
+      if(prom===null) return '';
+      let maxVal=q.tipo==='escala'?10:q.tipo==='caras'?4:5;
+      let pct=Math.round((prom/maxVal)*100);
+      let display=q.tipo==='estrellas'?'⭐'.repeat(Math.round(prom)):prom.toFixed(1);
+      return `<div class="result-item">
+        <div class="ri-label">${q.texto} <span>${display} / ${maxVal}</span></div>
+        <div class="bar-bg"><div class="bar-fill" style="width:${pct}%"></div></div>
+      </div>`;
+    }).join('');
+    const promGen=evals.map(e=>{ const vs=Object.values(e.respuestas||{}).filter(v=>typeof v==='number'); return vs.length?vs.reduce((a,b)=>a+b,0)/vs.length:null; }).filter(v=>v!==null);
+    const pg=promGen.length?promGen.reduce((a,b)=>a+b,0)/promGen.length:0;
+    return `<div class="result-card">
+      <h3>${p.nombre}</h3>
+      <div class="rc-tema">${p.tema||''} · ${evals.length} evaluación(es) · Promedio: <strong>${pg.toFixed(1)}</strong></div>
+      ${items}
+    </div>`;
+  }).join('');
+}
+
+function renderComentarios(){
+  const container=document.getElementById('comentarios-container');
+  if(!container) return;
+  const pregTextos=getPreguntas().filter(p=>p.tipo==='texto');
+  const evals=Object.values(evaluaciones).filter(e=>filtroComentarios==='todos'||e.ponenteId===filtroComentarios);
+  if(!evals.length){ container.innerHTML='<div class="empty-state">No hay comentarios aún</div>'; return; }
+  container.innerHTML=pregTextos.map(q=>{
+    const coms=evals.map(e=>e.respuestas?.[q.id]).filter(v=>v&&v.trim());
+    if(!coms.length) return '';
+    return `<div class="card"><p style="font-size:13px;font-weight:500;margin-bottom:10px;color:#555">${q.texto}</p>
+      <div class="comment-list">${coms.map(c=>`<div class="comment-item">💬 ${c}</div>`).join('')}</div>
+    </div>`;
+  }).join('') || '<div class="empty-state">No hay comentarios aún</div>';
+}
+
+function renderPonenteAdminList(){
+  const el=document.getElementById('ponentes-admin-list');
+  if(!el) return;
+  const ponentes=config.ponentes||[];
+  if(!ponentes.length){ el.innerHTML='<p style="font-size:13px;color:#888;margin-bottom:8px">No hay ponentes aún.</p>'; return; }
+  el.innerHTML=ponentes.map((p,i)=>`
+    <div class="ponente-admin-card">
+      <div><div style="font-size:13px;font-weight:500">${p.nombre}</div><div style="font-size:12px;color:#888">${p.tema||''}</div></div>
+      <button class="btn-sm btn-red" onclick="eliminarPonente(${i})">✕</button>
+    </div>`).join('');
+}
+
+function renderPreguntasAdmin(){
+  const el=document.getElementById('preguntas-admin-list');
+  if(!el) return;
+  const extras=config.preguntasExtra||[];
+  const iconos={estrellas:'⭐',escala:'🔢',caras:'😊',texto:'💬'};
+  el.innerHTML='<p style="font-size:12px;color:#888;margin-bottom:8px">Preguntas base (siempre activas):</p>'
+    +PREGUNTAS_BASE.map(p=>`<div style="display:flex;gap:8px;align-items:center;padding:6px 10px;background:#f5f5f2;border-radius:6px;margin-bottom:4px;font-size:12px;color:#555">${iconos[p.tipo]} ${p.texto}</div>`).join('')
+    +(extras.length?'<p style="font-size:12px;color:#888;margin:10px 0 6px">Preguntas adicionales:</p>'+extras.map((p,i)=>`
+      <div style="display:flex;gap:8px;align-items:center;padding:6px 10px;background:#EEF4FF;border-radius:6px;margin-bottom:4px;flex-wrap:wrap">
+        <span style="font-size:12px;flex:1">${iconos[p.tipo]} ${p.texto}</span>
+        <button class="btn-sm btn-red" onclick="eliminarPregunta(${i})">✕</button>
+      </div>`).join(''):'');
+}
+
+window.agregarPonente=async function(){
+  const nombre=document.getElementById('new-ponente-nombre').value.trim();
+  const tema=document.getElementById('new-ponente-tema').value.trim();
+  if(!nombre) return;
+  const ponentes=[...(config.ponentes||[]),{id:'p_'+Date.now(),nombre,tema}];
+  await update(ref(db,'eval/config'),{ponentes});
+  document.getElementById('new-ponente-nombre').value='';
+  document.getElementById('new-ponente-tema').value='';
+};
+
+window.eliminarPonente=async function(i){
+  if(!confirm('¿Eliminar este ponente?')) return;
+  const ponentes=[...(config.ponentes||[])]; ponentes.splice(i,1);
+  await update(ref(db,'eval/config'),{ponentes});
+};
+
+window.agregarPregunta=async function(){
+  const texto=document.getElementById('new-preg-texto').value.trim();
+  const tipo=document.getElementById('new-preg-tipo').value;
+  if(!texto) return;
+  const extras=[...(config.preguntasExtra||[]),{id:'extra_'+Date.now(),texto,tipo,base:false}];
+  await update(ref(db,'eval/config'),{preguntasExtra:extras});
+  document.getElementById('new-preg-texto').value='';
+};
+
+window.eliminarPregunta=async function(i){
+  if(!confirm('¿Eliminar esta pregunta?')) return;
+  const extras=[...(config.preguntasExtra||[])]; extras.splice(i,1);
+  await update(ref(db,'eval/config'),{preguntasExtra:extras});
+};
+
+window.guardarConfig=async function(){
+  const cfg={
+    titulo:document.getElementById('cfg-titulo').value||config.titulo,
+    subtitulo:document.getElementById('cfg-subtitulo').value||config.subtitulo,
+    pin:document.getElementById('cfg-pin').value||config.pin,
+    color:config.color||'#1a4a8a',
+    logo:config.logo||'',
+    ponentes:config.ponentes||[],
+    preguntasExtra:config.preguntasExtra||[]
+  };
+  await set(ref(db,'eval/config'),cfg);
+  const ok=document.getElementById('cfg-ok');
+  ok.style.display='block'; setTimeout(()=>ok.style.display='none',2000);
+};
+
+window.borrarEvaluaciones=async function(){
+  if(confirm('⚠️ ¿Borrar todas las evaluaciones?'))
+    if(confirm('¿Confirmas? Esta acción no se puede deshacer.'))
+      await remove(ref(db,'eval/evaluaciones'));
+};
+
+window.setTab=function(tab,btn){
+  ['resultados','comentarios','config'].forEach(t=>document.getElementById('tab-'+t).style.display=t===tab?'block':'none');
+  document.querySelectorAll('.admin-tab').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+};
+
+window.goTo=function(id){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  window.scrollTo(0,0);
+  if(id==='screen-ponentes') renderPonenteList();
+};
+
+actualizarUI();
+</script>
+</body>
+</html>

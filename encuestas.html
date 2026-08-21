@@ -1,0 +1,719 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Encuestas en Vivo — Enlace360</title>
+<style>
+:root{--accent:#5C6B3A;--accent-dark:#2D4A22;--accent-light:#E8EDD8;--tierra:#A0522D;--arena:#F5EFE6;--texto:#1C1C1A;--texto-suave:#6B6B5E;--borde:rgba(0,0,0,.1)}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:var(--arena);min-height:100vh;color:var(--texto)}
+.app{max-width:720px;margin:0 auto;padding:1rem}
+.screen{display:none}.screen.active{display:block}
+
+/* NAV */
+.nav{background:var(--accent-dark);color:#fff;padding:.9rem 1.25rem;border-radius:14px;margin-bottom:1.25rem;display:flex;justify-content:space-between;align-items:center}
+.nav-brand{font-size:17px;font-weight:600;letter-spacing:.02em}
+.nav-sub{font-size:11px;opacity:.75;margin-top:2px}
+.nav-btn{background:rgba(255,255,255,.15);border:none;color:#fff;padding:6px 14px;border-radius:8px;font-size:12px;cursor:pointer}
+.nav-btn:hover{background:rgba(255,255,255,.25)}
+
+/* HERO */
+.hero{background:linear-gradient(135deg,var(--accent-dark),var(--accent));border-radius:14px;padding:1.5rem;color:#fff;margin-bottom:1.25rem;position:relative;overflow:hidden}
+.hero::after{content:'';position:absolute;right:-20px;top:-20px;width:140px;height:140px;border-radius:50%;background:rgba(255,255,255,.06)}
+.hero h1{font-size:22px;font-weight:600;margin-bottom:4px;position:relative;z-index:1}
+.hero p{font-size:13px;opacity:.85;position:relative;z-index:1}
+
+/* Cards */
+.card{background:#fff;border:0.5px solid var(--borde);border-radius:12px;padding:1.25rem;margin-bottom:1rem}
+
+/* Role buttons */
+.role-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:1rem}
+@media(max-width:420px){.role-grid{grid-template-columns:1fr}}
+.role-btn{padding:1.1rem;border:0.5px solid var(--borde);border-radius:12px;background:#fff;cursor:pointer;text-align:left;transition:all .15s}
+.role-btn:hover{background:var(--accent-light);border-color:var(--accent)}
+.rb-icon{font-size:24px;margin-bottom:8px}
+.rb-title{font-size:14px;font-weight:500;color:var(--texto);display:block;margin-bottom:2px}
+.rb-desc{font-size:12px;color:var(--texto-suave);display:block}
+
+/* Botones */
+.btn-primary{background:var(--accent-dark);color:#fff;border:none;padding:11px 20px;border-radius:8px;font-size:14px;font-weight:500;cursor:pointer;width:100%;margin-top:8px;transition:background .15s}
+.btn-primary:hover{background:var(--accent)}
+.btn-primary:disabled{opacity:.5;cursor:not-allowed}
+.btn-back{background:none;border:0.5px solid var(--borde);color:var(--texto-suave);padding:7px 14px;border-radius:8px;font-size:13px;cursor:pointer;margin-bottom:1rem;display:inline-flex;align-items:center;gap:5px}
+.btn-sm{padding:6px 12px;font-size:12px;border-radius:6px;border:none;cursor:pointer;font-weight:500}
+.btn-green{background:#1D9E75;color:#fff}
+.btn-red{background:#E24B4A;color:#fff}
+.btn-outline{background:none;border:0.5px solid var(--borde);color:var(--texto-suave);padding:6px 12px;font-size:12px;border-radius:6px;cursor:pointer}
+.btn-tierra{background:var(--tierra);color:#fff}
+
+/* PIN */
+.pin-wrap{max-width:280px;margin:0 auto;text-align:center;padding:1rem 0}
+.pin-wrap input{text-align:center;font-size:22px;letter-spacing:6px;font-weight:500;width:100%;padding:10px;border:0.5px solid rgba(0,0,0,.2);border-radius:8px}
+
+/* Encuesta participante */
+.encuesta-header{background:var(--accent-dark);color:#fff;border-radius:12px;padding:1rem 1.25rem;margin-bottom:1rem}
+.encuesta-header h2{font-size:17px;font-weight:600;margin-bottom:2px}
+.encuesta-header p{font-size:12px;opacity:.8}
+.prog-bar{height:4px;background:rgba(255,255,255,.2);border-radius:2px;margin-top:10px}
+.prog-fill{height:100%;background:#fff;border-radius:2px;transition:width .4s ease}
+
+.pregunta-card{background:#fff;border:0.5px solid var(--borde);border-radius:14px;padding:1.25rem;margin-bottom:1rem;animation:fadeIn .3s ease}
+@keyframes fadeIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+.preg-num{font-size:11px;font-weight:600;color:var(--accent);text-transform:uppercase;letter-spacing:.08em;margin-bottom:6px}
+.preg-texto{font-size:16px;font-weight:500;color:var(--texto);line-height:1.5;margin-bottom:1rem}
+
+/* Tipos de respuesta */
+/* Escala 1-5 */
+.escala-wrap{display:flex;gap:8px;flex-wrap:wrap;justify-content:center}
+.escala-btn{width:52px;height:52px;border-radius:12px;border:1.5px solid var(--borde);background:#fff;font-size:18px;font-weight:600;cursor:pointer;transition:all .15s;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px}
+.escala-btn .escala-emoji{font-size:18px}
+.escala-btn .escala-num{font-size:11px;color:#888}
+.escala-btn:hover{border-color:var(--accent);background:var(--accent-light)}
+.escala-btn.selected{border-color:var(--accent-dark);background:var(--accent-dark);color:#fff}
+.escala-btn.selected .escala-num{color:rgba(255,255,255,.8)}
+
+/* Opción múltiple */
+.opciones-list{display:flex;flex-direction:column;gap:8px}
+.opcion-btn{padding:12px 16px;border:1.5px solid var(--borde);border-radius:10px;background:#fff;text-align:left;cursor:pointer;font-size:14px;color:var(--texto);transition:all .15s;display:flex;align-items:center;gap:10px}
+.opcion-btn:hover{border-color:var(--accent);background:var(--accent-light)}
+.opcion-btn.selected{border-color:var(--accent-dark);background:var(--accent-dark);color:#fff}
+.opcion-letra{width:24px;height:24px;border-radius:50%;background:rgba(0,0,0,.08);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:600;flex-shrink:0}
+.opcion-btn.selected .opcion-letra{background:rgba(255,255,255,.2)}
+
+/* Sí/No */
+.sino-wrap{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.sino-btn{padding:1rem;border:1.5px solid var(--borde);border-radius:12px;background:#fff;font-size:20px;cursor:pointer;text-align:center;transition:all .15s}
+.sino-btn:hover{border-color:var(--accent)}
+.sino-btn.selected-si{border-color:#1D9E75;background:#E1F5EE}
+.sino-btn.selected-no{border-color:#E24B4A;background:#FCEBEB}
+.sino-label{font-size:13px;font-weight:500;margin-top:4px}
+
+/* Texto abierto */
+textarea.resp-texto{width:100%;min-height:100px;padding:10px 12px;border:0.5px solid rgba(0,0,0,.2);border-radius:8px;font-size:14px;color:var(--texto);background:#fff;resize:vertical;font-family:inherit;line-height:1.6}
+textarea.resp-texto:focus{outline:none;border-color:var(--accent)}
+
+/* Nav preguntas */
+.nav-pregs{display:flex;gap:8px;justify-content:space-between;margin-top:1rem}
+.btn-nav{flex:1;padding:10px;border-radius:8px;border:none;font-size:13px;font-weight:500;cursor:pointer;transition:all .15s}
+.btn-prev{background:#f5f5f2;color:var(--texto-suave)}
+.btn-next{background:var(--accent-dark);color:#fff}
+.btn-next:disabled{opacity:.4;cursor:not-allowed}
+
+/* Éxito */
+.success-box{background:var(--accent-light);border:0.5px solid var(--accent);border-radius:12px;padding:1.5rem;text-align:center}
+.success-box h3{color:var(--accent-dark);font-size:18px;font-weight:600;margin-bottom:6px}
+.success-box p{font-size:14px;color:var(--accent);line-height:1.6}
+
+/* Admin - pantalla proyección */
+.live-badge{background:#E24B4A;color:#fff;font-size:11px;font-weight:500;padding:4px 10px;border-radius:20px;display:inline-flex;align-items:center;gap:5px}
+.live-dot{width:6px;height:6px;background:#fff;border-radius:50%;animation:pulse 1.2s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
+
+.stats-row{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:1rem}
+.stat{background:#fff;border:0.5px solid var(--borde);border-radius:8px;padding:10px 12px;text-align:center}
+.stat .val{font-size:22px;font-weight:600;color:var(--accent-dark)}
+.stat .lbl{font-size:11px;color:var(--texto-suave);margin-top:2px}
+
+.admin-tabs{display:flex;gap:0;margin-bottom:1rem;border:0.5px solid var(--borde);border-radius:8px;overflow:hidden}
+.admin-tab{flex:1;padding:9px 4px;font-size:12px;font-weight:500;color:#555;cursor:pointer;background:#fff;border:none;transition:background .15s}
+.admin-tab.active{background:var(--accent-dark);color:#fff}
+
+/* Resultados proyección */
+.result-preg{background:#fff;border:0.5px solid var(--borde);border-radius:12px;padding:1.25rem;margin-bottom:1rem}
+.result-preg h3{font-size:15px;font-weight:600;margin-bottom:4px;color:var(--texto)}
+.result-preg .resp-count{font-size:12px;color:var(--texto-suave);margin-bottom:1rem}
+
+/* Barras resultado */
+.res-bar-row{display:flex;align-items:center;gap:8px;margin-bottom:8px}
+.res-bar-label{font-size:13px;color:var(--texto);width:100px;flex-shrink:0}
+.res-bar-track{flex:1;background:#f0f0ee;border-radius:20px;height:24px;overflow:hidden;position:relative}
+.res-bar-fill{height:100%;border-radius:20px;display:flex;align-items:center;padding-left:10px;font-size:12px;font-weight:500;color:#fff;transition:width .6s ease;min-width:30px}
+.res-bar-val{font-size:13px;font-weight:600;color:var(--texto);width:40px;text-align:right}
+
+/* Nube de palabras */
+.word-cloud{display:flex;flex-wrap:wrap;gap:8px;padding:.5rem 0}
+.word-tag{padding:5px 12px;border-radius:20px;background:var(--accent-light);color:var(--accent-dark);font-size:13px;font-weight:500}
+.word-tag.big{font-size:16px;background:var(--accent-dark);color:#fff}
+.word-tag.med{font-size:14px;background:var(--accent);color:#fff}
+
+/* Escala resultado */
+.escala-result{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:8px}
+.escala-res-item{text-align:center;flex:1;min-width:50px}
+.escala-res-bar{background:#f0f0ee;border-radius:8px;height:80px;display:flex;align-items:flex-end;overflow:hidden;margin-bottom:4px}
+.escala-res-fill{width:100%;border-radius:8px;transition:height .6s ease;background:var(--accent)}
+.escala-res-num{font-size:16px;font-weight:600;color:var(--texto)}
+.escala-res-lbl{font-size:11px;color:var(--texto-suave)}
+
+/* Config */
+.form-group{margin-bottom:1rem}
+.form-group label{display:block;font-size:13px;font-weight:500;color:#444;margin-bottom:5px}
+.form-group input,.form-group select,.form-group textarea{width:100%;padding:10px 12px;border:0.5px solid rgba(0,0,0,.2);border-radius:8px;font-size:14px;color:var(--texto);background:#fff;font-family:inherit}
+.form-group input:focus,.form-group select:focus{outline:none;border-color:var(--accent)}
+
+.preg-admin-card{background:#fff;border:0.5px solid var(--borde);border-radius:10px;padding:12px;margin-bottom:8px;display:flex;gap:10px;align-items:flex-start;flex-wrap:wrap}
+.preg-admin-info{flex:1}
+.preg-admin-info p{font-size:13px;font-weight:500;color:var(--texto);margin-bottom:2px}
+.preg-admin-info span{font-size:11px;color:var(--texto-suave)}
+.tipo-badge{font-size:10px;font-weight:600;padding:2px 8px;border-radius:20px;background:var(--accent-light);color:var(--accent-dark)}
+
+.add-preg-form{border:1.5px dashed var(--borde);border-radius:10px;padding:1rem;margin-top:8px}
+.add-row{display:flex;gap:8px;margin-top:8px;flex-wrap:wrap}
+.add-row input,.add-row select{flex:1;min-width:120px}
+
+.opciones-config{margin-top:8px;display:flex;flex-direction:column;gap:6px}
+.opcion-config-row{display:flex;gap:6px;align-items:center}
+.opcion-config-row input{flex:1}
+
+.color-row{display:flex;gap:8px;flex-wrap:wrap;margin-top:6px}
+.color-dot{width:26px;height:26px;border-radius:50%;cursor:pointer;border:2px solid transparent;transition:transform .15s}
+.color-dot:hover,.color-dot.sel{border-color:#1a1a18;transform:scale(1.15)}
+
+.empty-state{text-align:center;padding:2rem;color:var(--texto-suave);font-size:14px}
+
+/* Control presentador */
+.control-panel{background:var(--accent-dark);color:#fff;border-radius:12px;padding:1rem 1.25rem;margin-bottom:1rem;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px}
+.control-panel p{font-size:13px;opacity:.8}
+.control-panel h3{font-size:15px;font-weight:600}
+.ctrl-btns{display:flex;gap:8px}
+.ctrl-btn{background:rgba(255,255,255,.15);border:none;color:#fff;padding:8px 14px;border-radius:8px;font-size:13px;cursor:pointer;font-weight:500}
+.ctrl-btn:hover{background:rgba(255,255,255,.25)}
+.ctrl-btn.active-btn{background:#fff;color:var(--accent-dark)}
+</style>
+</head>
+<body>
+<div class="app">
+
+<!-- INTRO -->
+<div id="screen-intro" class="screen active">
+  <nav class="nav">
+    <div>
+      <div class="nav-brand">Enlace360</div>
+      <div class="nav-sub" id="nav-titulo">Encuestas en Vivo</div>
+    </div>
+    <button class="nav-btn" onclick="goTo('screen-pin')">🔐 Admin</button>
+  </nav>
+  <div class="hero">
+    <h1 id="hero-titulo">Encuesta en Vivo</h1>
+    <p id="hero-desc">Comparte tu opinión — los resultados aparecen en pantalla al instante</p>
+  </div>
+  <div class="card">
+    <p style="font-size:14px;color:var(--texto-suave);margin-bottom:1rem">¿Qué deseas hacer?</p>
+    <div class="role-grid">
+      <button class="role-btn" onclick="iniciarEncuesta()">
+        <div class="rb-icon">📝</div>
+        <span class="rb-title">Responder encuesta</span>
+        <span class="rb-desc">Participa y ve los resultados en vivo</span>
+      </button>
+      <button class="role-btn" onclick="goTo('screen-pin')">
+        <div class="rb-icon">📊</div>
+        <span class="rb-title">Pantalla de proyección</span>
+        <span class="rb-desc">Resultados en tiempo real para proyectar</span>
+      </button>
+    </div>
+  </div>
+  <div id="encuesta-cerrada-msg" style="display:none" class="card">
+    <p style="text-align:center;color:#A32D2D;font-size:14px">🔒 La encuesta está cerrada por el momento.</p>
+  </div>
+</div>
+
+<!-- ENCUESTA PARTICIPANTE -->
+<div id="screen-encuesta" class="screen">
+  <div class="encuesta-header" id="enc-header">
+    <h2 id="enc-titulo">Encuesta</h2>
+    <p id="enc-progreso">Pregunta 1 de X</p>
+    <div class="prog-bar"><div class="prog-fill" id="prog-fill" style="width:0%"></div></div>
+  </div>
+  <div id="preguntas-container"></div>
+  <div id="enc-error" style="color:#A32D2D;font-size:13px;margin-bottom:8px;display:none">Por favor selecciona una respuesta antes de continuar.</div>
+  <div class="nav-pregs">
+    <button class="btn-nav btn-prev" id="btn-prev" onclick="prevPregunta()" style="display:none">← Anterior</button>
+    <button class="btn-nav btn-next" id="btn-next" onclick="nextPregunta()">Siguiente →</button>
+  </div>
+</div>
+
+<!-- ÉXITO -->
+<div id="screen-exito" class="screen">
+  <div class="success-box">
+    <div style="font-size:40px;margin-bottom:10px">✅</div>
+    <h3>¡Gracias por participar!</h3>
+    <p>Tus respuestas han sido registradas. Los resultados aparecen en pantalla al instante.</p>
+  </div>
+  <button class="btn-primary" style="margin-top:1rem" onclick="goTo('screen-intro')">Volver al inicio</button>
+</div>
+
+<!-- PIN -->
+<div id="screen-pin" class="screen">
+  <button class="btn-back" onclick="goTo('screen-intro')">← Volver</button>
+  <div class="card">
+    <div class="pin-wrap">
+      <div style="font-size:36px;margin-bottom:12px">🔐</div>
+      <p style="font-size:15px;font-weight:500;margin-bottom:16px">Panel de administración</p>
+      <input type="password" id="pin-input" placeholder="••••" maxlength="6" onkeyup="if(event.key==='Enter')verificarPin()">
+      <p style="font-size:12px;color:#888;margin-top:6px">PIN predeterminado: 1234</p>
+      <button class="btn-primary" onclick="verificarPin()" style="margin-top:1rem">Entrar</button>
+      <div id="pin-error" style="color:#A32D2D;font-size:13px;margin-top:8px;display:none">PIN incorrecto</div>
+    </div>
+  </div>
+</div>
+
+<!-- ADMIN -->
+<div id="screen-admin" class="screen">
+  <nav class="nav" style="margin-bottom:1.25rem">
+    <div><div class="nav-brand">Enlace360 · Encuestas</div><div class="nav-sub">Panel de administración</div></div>
+    <button class="nav-btn" onclick="goTo('screen-intro')">← Salir</button>
+  </nav>
+
+  <div class="stats-row">
+    <div class="stat"><div class="val" id="stat-resp">0</div><div class="lbl">Respuestas</div></div>
+    <div class="stat"><div class="val" id="stat-pregs">0</div><div class="lbl">Preguntas</div></div>
+    <div class="stat"><div class="val" id="stat-estado">—</div><div class="lbl">Estado</div></div>
+  </div>
+
+  <div class="admin-tabs">
+    <button class="admin-tab active" onclick="setTab('proyeccion',this)">📊 Proyección</button>
+    <button class="admin-tab" onclick="setTab('control',this)">🎮 Control</button>
+    <button class="admin-tab" onclick="setTab('config',this)">⚙️ Config</button>
+  </div>
+
+  <!-- PROYECCIÓN -->
+  <div id="tab-proyeccion">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem;flex-wrap:wrap;gap:8px">
+      <h3 style="font-size:15px;font-weight:500">Resultados en vivo</h3>
+      <div class="live-badge"><div class="live-dot"></div> En vivo</div>
+    </div>
+    <div id="resultados-container"><div class="empty-state">⏳ Esperando respuestas...</div></div>
+  </div>
+
+  <!-- CONTROL -->
+  <div id="tab-control" style="display:none">
+    <div class="card">
+      <p style="font-size:14px;font-weight:500;margin-bottom:4px">🎮 Control del presentador</p>
+      <p style="font-size:12px;color:var(--texto-suave);margin-bottom:1rem">Gestiona el flujo de la encuesta en tiempo real</p>
+      <div style="display:flex;flex-direction:column;gap:10px">
+        <div style="display:flex;justify-content:space-between;align-items:center;padding:10px 14px;border:0.5px solid var(--borde);border-radius:10px;flex-wrap:wrap;gap:8px">
+          <div><div style="font-size:14px;font-weight:500">Estado de la encuesta</div><div style="font-size:12px;color:var(--texto-suave)">Controla si los participantes pueden responder</div></div>
+          <div style="display:flex;gap:8px">
+            <button class="btn-sm btn-green" onclick="setEstado('abierta')">▶ Abrir</button>
+            <button class="btn-sm btn-red" onclick="setEstado('cerrada')">⏸ Cerrar</button>
+          </div>
+        </div>
+        <div style="display:flex;justify-content:space-between;align-items:center;padding:10px 14px;border:0.5px solid var(--borde);border-radius:10px;flex-wrap:wrap;gap:8px">
+          <div><div style="font-size:14px;font-weight:500">Modo de flujo</div><div style="font-size:12px;color:var(--texto-suave)">Cómo avanza el participante</div></div>
+          <div style="display:flex;gap:8px">
+            <button class="btn-sm" style="background:var(--accent-light);color:var(--accent-dark)" onclick="setModo('libre')">📋 Libre</button>
+            <button class="btn-sm" style="background:var(--accent-dark);color:#fff" onclick="setModo('guiado')">🎯 Guiado</button>
+          </div>
+        </div>
+        <div style="display:flex;justify-content:space-between;align-items:center;padding:10px 14px;border:0.5px solid var(--borde);border-radius:10px;flex-wrap:wrap;gap:8px">
+          <div><div style="font-size:14px;font-weight:500">Pregunta activa (modo guiado)</div><div id="preg-activa-info" style="font-size:12px;color:var(--texto-suave)">—</div></div>
+          <div style="display:flex;gap:8px">
+            <button class="btn-sm btn-outline" onclick="pregAnterior()">← Anterior</button>
+            <button class="btn-sm btn-tierra" onclick="pregSiguiente()">Siguiente →</button>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="card" style="border-color:#F09595">
+      <p style="font-size:14px;font-weight:500;color:#A32D2D;margin-bottom:8px">⚠️ Zona de peligro</p>
+      <button class="btn-sm btn-red" onclick="borrarRespuestas()">🗑 Borrar todas las respuestas</button>
+    </div>
+  </div>
+
+  <!-- CONFIG -->
+  <div id="tab-config" style="display:none">
+    <div class="card">
+      <p style="font-size:14px;font-weight:500;margin-bottom:1rem">📋 Datos de la encuesta</p>
+      <div class="form-group"><label>Título</label><input type="text" id="cfg-titulo" placeholder="Ej. Encuesta de satisfacción 2025"></div>
+      <div class="form-group"><label>Descripción</label><input type="text" id="cfg-desc" placeholder="Ej. Comparte tu opinión sobre el evento"></div>
+      <div class="form-group"><label>PIN de administrador</label><input type="text" id="cfg-pin" placeholder="1234" maxlength="6"></div>
+      <button class="btn-primary" onclick="guardarConfig()">💾 Guardar</button>
+      <div id="cfg-ok" style="color:#085041;font-size:13px;margin-top:8px;display:none">✓ Guardado</div>
+    </div>
+
+    <div class="card">
+      <p style="font-size:14px;font-weight:500;margin-bottom:4px">❓ Preguntas</p>
+      <p style="font-size:12px;color:var(--texto-suave);margin-bottom:12px">Agrega y ordena las preguntas de tu encuesta</p>
+      <div id="preguntas-admin"></div>
+      <div class="add-preg-form">
+        <p style="font-size:13px;font-weight:500;margin-bottom:8px">+ Nueva pregunta</p>
+        <div class="form-group"><label>Texto de la pregunta</label><input type="text" id="new-preg-texto" placeholder="Escribe la pregunta..."></div>
+        <div class="form-group"><label>Tipo de respuesta</label>
+          <select id="new-preg-tipo" onchange="toggleOpcionesConfig()">
+            <option value="escala">⭐ Escala de opinión (1-5)</option>
+            <option value="multiple">🔘 Opción múltiple</option>
+            <option value="sino">👍 Sí / No</option>
+            <option value="abierta">💬 Respuesta abierta</option>
+          </select>
+        </div>
+        <div id="opciones-config-wrap" style="display:none">
+          <label style="font-size:13px;font-weight:500;display:block;margin-bottom:6px">Opciones de respuesta</label>
+          <div class="opciones-config" id="opciones-config-list">
+            <div class="opcion-config-row"><input type="text" placeholder="Opción A"><button class="btn-sm btn-red" onclick="this.parentElement.remove()">✕</button></div>
+            <div class="opcion-config-row"><input type="text" placeholder="Opción B"><button class="btn-sm btn-red" onclick="this.parentElement.remove()">✕</button></div>
+          </div>
+          <button class="btn-sm btn-outline" onclick="agregarOpcionConfig()" style="margin-top:6px">+ Agregar opción</button>
+        </div>
+        <button class="btn-primary" onclick="agregarPregunta()">+ Agregar pregunta</button>
+      </div>
+    </div>
+  </div>
+
+  <button class="btn-back" style="margin-top:1rem" onclick="goTo('screen-intro')">← Salir del panel</button>
+</div>
+
+</div>
+
+<script type="module">
+import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
+import { getDatabase, ref, push, set, onValue, update, remove } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js';
+
+const firebaseConfig = {
+  apiKey: "AIzaSyDGTP-yQGULgotUGzvsHvxJnhLI-tII2Js",
+  authDomain: "registro-eventos-dd07b.firebaseapp.com",
+  databaseURL: "https://registro-eventos-dd07b-default-rtdb.firebaseio.com",
+  projectId: "registro-eventos-dd07b",
+  storageBucket: "registro-eventos-dd07b.firebasestorage.app",
+  messagingSenderId: "329341382451",
+  appId: "1:329341382451:web:e5545731565337dab61846"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getDatabase(app);
+
+const EMOJIS_ESCALA = ['😞','😐','🙂','😊','🤩'];
+const COLORES_BARRA = ['#5C6B3A','#A0522D','#2D7D9A','#7F77DD','#E07B00'];
+
+let config = {titulo:'Encuesta en Vivo', desc:'Comparte tu opinión', pin:'1234', estado:'abierta', modo:'libre', pregActiva:0, preguntas:[]};
+let respuestas = {};
+let pregActual = 0;
+let respuestasUsuario = {};
+
+onValue(ref(db,'enc/config'), snap=>{ if(snap.val()){ config={...config,...snap.val()}; actualizarUI(); } });
+onValue(ref(db,'enc/respuestas'), snap=>{ respuestas=snap.val()||{}; renderResultados(); actualizarStats(); });
+
+function actualizarUI(){
+  document.getElementById('hero-titulo').textContent = config.titulo||'Encuesta en Vivo';
+  document.getElementById('hero-desc').textContent = config.desc||'';
+  document.getElementById('nav-titulo').textContent = config.titulo||'Encuestas en Vivo';
+  const cfg_t = document.getElementById('cfg-titulo'); if(cfg_t) cfg_t.value=config.titulo||'';
+  const cfg_d = document.getElementById('cfg-desc'); if(cfg_d) cfg_d.value=config.desc||'';
+  const cfg_p = document.getElementById('cfg-pin'); if(cfg_p) cfg_p.value=config.pin||'1234';
+  const cerrado = document.getElementById('encuesta-cerrada-msg');
+  if(cerrado) cerrado.style.display = config.estado==='cerrada'?'block':'none';
+  renderPreguntasAdmin();
+  const pai = document.getElementById('preg-activa-info');
+  if(pai && config.preguntas?.length){
+    const p = config.preguntas[config.pregActiva||0];
+    pai.textContent = p ? `Pregunta ${(config.pregActiva||0)+1}: "${p.texto?.substring(0,40)}..."` : '—';
+  }
+}
+
+function actualizarStats(){
+  const total = Object.keys(respuestas).length;
+  document.getElementById('stat-resp').textContent = total;
+  document.getElementById('stat-pregs').textContent = (config.preguntas||[]).length;
+  document.getElementById('stat-estado').textContent = config.estado==='abierta'?'✅ Abierta':'🔒 Cerrada';
+}
+
+// ---- PARTICIPANTE ----
+window.iniciarEncuesta = function(){
+  if(config.estado==='cerrada'){ alert('La encuesta está cerrada por el momento.'); return; }
+  const pregs = config.preguntas||[];
+  if(!pregs.length){ alert('No hay preguntas configuradas aún.'); return; }
+  pregActual = config.modo==='guiado' ? (config.pregActiva||0) : 0;
+  respuestasUsuario = {};
+  renderPreguntaActual();
+  goTo('screen-encuesta');
+};
+
+function renderPreguntaActual(){
+  const pregs = config.preguntas||[];
+  const modoLibre = config.modo==='libre';
+  const totalPregs = modoLibre ? pregs.length : 1;
+  const idx = modoLibre ? pregActual : (config.pregActiva||0);
+  const preg = pregs[idx];
+  if(!preg) return;
+
+  document.getElementById('enc-titulo').textContent = config.titulo||'Encuesta';
+  document.getElementById('enc-progreso').textContent = modoLibre ? `Pregunta ${idx+1} de ${pregs.length}` : `Pregunta ${idx+1}`;
+  document.getElementById('prog-fill').style.width = modoLibre ? `${((idx+1)/pregs.length)*100}%` : '50%';
+
+  const container = document.getElementById('preguntas-container');
+  container.innerHTML = renderPreguntaHTML(preg, idx);
+
+  const btnPrev = document.getElementById('btn-prev');
+  const btnNext = document.getElementById('btn-next');
+  if(modoLibre){
+    btnPrev.style.display = idx>0 ? 'block' : 'none';
+    btnNext.textContent = idx===pregs.length-1 ? '✓ Enviar' : 'Siguiente →';
+  } else {
+    btnPrev.style.display='none';
+    btnNext.textContent = '✓ Enviar respuesta';
+  }
+  // Restaurar selección si ya respondió
+  if(respuestasUsuario[idx] !== undefined) restaurarSeleccion(preg, idx, respuestasUsuario[idx]);
+}
+
+function renderPreguntaHTML(preg, idx){
+  const resp = respuestasUsuario[idx];
+  if(preg.tipo==='escala') return `
+    <div class="pregunta-card">
+      <div class="preg-num">Pregunta ${idx+1}</div>
+      <div class="preg-texto">${preg.texto}</div>
+      <div class="escala-wrap">
+        ${EMOJIS_ESCALA.map((e,i)=>`
+          <button class="escala-btn ${resp===i+1?'selected':''}" onclick="selEscala(${idx},${i+1},this)">
+            <span class="escala-emoji">${e}</span>
+            <span class="escala-num">${i+1}</span>
+          </button>`).join('')}
+      </div>
+      <div style="display:flex;justify-content:space-between;font-size:11px;color:#888;margin-top:8px"><span>Muy malo</span><span>Excelente</span></div>
+    </div>`;
+  if(preg.tipo==='multiple') return `
+    <div class="pregunta-card">
+      <div class="preg-num">Pregunta ${idx+1}</div>
+      <div class="preg-texto">${preg.texto}</div>
+      <div class="opciones-list">
+        ${(preg.opciones||[]).map((op,i)=>`
+          <button class="opcion-btn ${resp===i?'selected':''}" onclick="selOpcion(${idx},${i},this)">
+            <span class="opcion-letra">${String.fromCharCode(65+i)}</span>
+            ${op}
+          </button>`).join('')}
+      </div>
+    </div>`;
+  if(preg.tipo==='sino') return `
+    <div class="pregunta-card">
+      <div class="preg-num">Pregunta ${idx+1}</div>
+      <div class="preg-texto">${preg.texto}</div>
+      <div class="sino-wrap">
+        <button class="sino-btn ${resp==='si'?'selected-si':''}" onclick="selSino(${idx},'si',this)">
+          <div style="font-size:28px">👍</div>
+          <div class="sino-label" style="color:${resp==='si'?'#1D9E75':''}">Sí</div>
+        </button>
+        <button class="sino-btn ${resp==='no'?'selected-no':''}" onclick="selSino(${idx},'no',this)">
+          <div style="font-size:28px">👎</div>
+          <div class="sino-label" style="color:${resp==='no'?'#E24B4A':''}">No</div>
+        </button>
+      </div>
+    </div>`;
+  if(preg.tipo==='abierta') return `
+    <div class="pregunta-card">
+      <div class="preg-num">Pregunta ${idx+1}</div>
+      <div class="preg-texto">${preg.texto}</div>
+      <textarea class="resp-texto" id="resp-abierta-${idx}" placeholder="Escribe tu respuesta..." oninput="setAbierta(${idx},this.value)">${resp||''}</textarea>
+    </div>`;
+  return '';
+}
+
+function restaurarSeleccion(preg, idx, val){
+  if(preg.tipo==='escala'){
+    document.querySelectorAll('.escala-btn').forEach((b,i)=>b.classList.toggle('selected',i+1===val));
+  }
+}
+
+window.setAbierta=function(idx,val){
+  respuestasUsuario[idx]=val;
+  document.getElementById('enc-error').style.display='none';
+};
+
+window.selEscala=function(idx,val,btn){
+  respuestasUsuario[idx]=val;
+  document.querySelectorAll('.escala-btn').forEach((b,i)=>b.classList.toggle('selected',i+1===val));
+  document.getElementById('enc-error').style.display='none';
+};
+window.selOpcion=function(idx,val,btn){
+  respuestasUsuario[idx]=val;
+  document.querySelectorAll('.opcion-btn').forEach(b=>b.classList.remove('selected'));
+  btn.classList.add('selected');
+  document.getElementById('enc-error').style.display='none';
+};
+window.selSino=function(idx,val,btn){
+  respuestasUsuario[idx]=val;
+  document.querySelectorAll('.sino-btn').forEach(b=>{ b.classList.remove('selected-si','selected-no'); });
+  btn.classList.add(val==='si'?'selected-si':'selected-no');
+  document.getElementById('enc-error').style.display='none';
+};
+
+window.nextPregunta = async function(){
+  const pregs = config.preguntas||[];
+  const modoLibre = config.modo==='libre';
+  const idx = modoLibre ? pregActual : (config.pregActiva||0);
+  const preg = pregs[idx];
+  // Validar respuesta
+  if(preg.tipo!=='abierta' && respuestasUsuario[idx]===undefined){
+    document.getElementById('enc-error').style.display='block'; return;
+  }
+  document.getElementById('enc-error').style.display='none';
+  if(modoLibre && pregActual < pregs.length-1){
+    pregActual++;
+    renderPreguntaActual();
+  } else {
+    // Enviar todas las respuestas
+    await push(ref(db,'enc/respuestas'),{respuestas:respuestasUsuario, timestamp:Date.now()});
+    goTo('screen-exito');
+  }
+};
+
+window.prevPregunta = function(){
+  if(pregActual>0){ pregActual--; renderPreguntaActual(); }
+};
+
+// ---- ADMIN ----
+window.verificarPin=function(){
+  if(document.getElementById('pin-input').value===config.pin){
+    document.getElementById('pin-input').value='';
+    document.getElementById('pin-error').style.display='none';
+    goTo('screen-admin');
+  } else { document.getElementById('pin-error').style.display='block'; }
+};
+
+function renderResultados(){
+  const container = document.getElementById('resultados-container');
+  if(!container) return;
+  const pregs = config.preguntas||[];
+  const todas = Object.values(respuestas);
+  if(!todas.length||!pregs.length){ container.innerHTML='<div class="empty-state">⏳ Esperando respuestas...</div>'; return; }
+  container.innerHTML = pregs.map((preg,pi)=>{
+    const resps = todas.map(r=>r.respuestas?.[pi]).filter(v=>v!==undefined&&v!==null&&v!=='');
+    if(!resps.length) return `<div class="result-preg"><h3>${preg.texto}</h3><div class="resp-count">Sin respuestas aún</div></div>`;
+    let contenido = '';
+    if(preg.tipo==='escala'){
+      const conteo = [0,0,0,0,0];
+      resps.forEach(r=>{ if(r>=1&&r<=5) conteo[r-1]++; });
+      const prom = resps.reduce((a,b)=>a+b,0)/resps.length;
+      contenido = `<div style="margin-bottom:8px;font-size:13px;color:var(--texto-suave)">Promedio: <strong>${prom.toFixed(1)}/5</strong></div>
+        <div class="escala-result">${conteo.map((c,i)=>`
+          <div class="escala-res-item">
+            <div class="escala-res-bar"><div class="escala-res-fill" style="height:${resps.length?Math.round(c/resps.length*100):0}%"></div></div>
+            <div class="escala-res-num">${EMOJIS_ESCALA[i]}</div>
+            <div class="escala-res-lbl">${i+1} · ${c}</div>
+          </div>`).join('')}</div>`;
+    } else if(preg.tipo==='multiple'){
+      const conteo = {};
+      (preg.opciones||[]).forEach((op,i)=>conteo[i]=0);
+      resps.forEach(r=>{ if(conteo[r]!==undefined) conteo[r]++; });
+      const maxC = Math.max(...Object.values(conteo),1);
+      contenido = Object.entries(conteo).map(([i,c])=>`
+        <div class="res-bar-row">
+          <div class="res-bar-label">${String.fromCharCode(65+parseInt(i))}. ${(preg.opciones||[])[i]||''}</div>
+          <div class="res-bar-track"><div class="res-bar-fill" style="width:${Math.round(c/maxC*100)}%;background:${COLORES_BARRA[i%5]}">${Math.round(c/resps.length*100)}%</div></div>
+          <div class="res-bar-val">${c}</div>
+        </div>`).join('');
+    } else if(preg.tipo==='sino'){
+      const si=resps.filter(r=>r==='si').length, no=resps.length-si;
+      contenido = `
+        <div class="res-bar-row"><div class="res-bar-label">👍 Sí</div><div class="res-bar-track"><div class="res-bar-fill" style="width:${Math.round(si/resps.length*100)}%;background:#1D9E75">${Math.round(si/resps.length*100)}%</div></div><div class="res-bar-val">${si}</div></div>
+        <div class="res-bar-row"><div class="res-bar-label">👎 No</div><div class="res-bar-track"><div class="res-bar-fill" style="width:${Math.round(no/resps.length*100)}%;background:#E24B4A">${Math.round(no/resps.length*100)}%</div></div><div class="res-bar-val">${no}</div></div>`;
+    } else if(preg.tipo==='abierta'){
+      const palabras = {};
+      resps.forEach(r=>{ r.toLowerCase().split(/\s+/).filter(p=>p.length>3).forEach(p=>palabras[p]=(palabras[p]||0)+1); });
+      const sorted = Object.entries(palabras).sort((a,b)=>b[1]-a[1]).slice(0,20);
+      const max = sorted[0]?.[1]||1;
+      contenido = `<div class="word-cloud">${sorted.map(([w,c])=>`<span class="word-tag ${c/max>.7?'big':c/max>.4?'med':''}">${w} ${c>1?`(${c})`:''}</span>`).join('')}</div>
+        <div style="margin-top:10px;max-height:150px;overflow-y:auto;display:flex;flex-direction:column;gap:6px">
+          ${resps.map(r=>`<div style="background:#f5f5f2;border-radius:8px;padding:8px 10px;font-size:13px">💬 ${r}</div>`).join('')}
+        </div>`;
+    }
+    return `<div class="result-preg"><h3>${preg.texto}</h3><div class="resp-count">${resps.length} respuesta(s)</div>${contenido}</div>`;
+  }).join('');
+}
+
+function renderPreguntasAdmin(){
+  const el = document.getElementById('preguntas-admin');
+  if(!el) return;
+  const pregs = config.preguntas||[];
+  const tipos = {escala:'⭐ Escala',multiple:'🔘 Múltiple',sino:'👍 Sí/No',abierta:'💬 Abierta'};
+  el.innerHTML = pregs.length ? pregs.map((p,i)=>`
+    <div class="preg-admin-card">
+      <div class="preg-admin-info">
+        <p>${i+1}. ${p.texto}</p>
+        <span>${tipos[p.tipo]||p.tipo}${p.opciones?' · '+p.opciones.length+' opciones':''}</span>
+      </div>
+      <button class="btn-sm btn-red" onclick="eliminarPregunta(${i})">✕</button>
+    </div>`).join('') : '<p style="font-size:13px;color:#888;margin-bottom:8px">No hay preguntas aún.</p>';
+}
+
+window.toggleOpcionesConfig=function(){
+  const tipo = document.getElementById('new-preg-tipo').value;
+  document.getElementById('opciones-config-wrap').style.display = tipo==='multiple'?'block':'none';
+};
+
+window.agregarOpcionConfig=function(){
+  const lista = document.getElementById('opciones-config-list');
+  const div = document.createElement('div');
+  div.className='opcion-config-row';
+  div.innerHTML=`<input type="text" placeholder="Nueva opción"><button class="btn-sm btn-red" onclick="this.parentElement.remove()">✕</button>`;
+  lista.appendChild(div);
+};
+
+window.agregarPregunta=async function(){
+  const texto = document.getElementById('new-preg-texto').value.trim();
+  const tipo = document.getElementById('new-preg-tipo').value;
+  if(!texto){ alert('Escribe el texto de la pregunta'); return; }
+  const nueva = {texto, tipo};
+  if(tipo==='multiple'){
+    const inputs = document.querySelectorAll('#opciones-config-list input');
+    nueva.opciones = Array.from(inputs).map(i=>i.value.trim()).filter(v=>v);
+    if(nueva.opciones.length<2){ alert('Agrega al menos 2 opciones'); return; }
+  }
+  const pregs = [...(config.preguntas||[]), nueva];
+  await update(ref(db,'enc/config'),{preguntas:pregs});
+  document.getElementById('new-preg-texto').value='';
+  document.getElementById('opciones-config-list').innerHTML=`
+    <div class="opcion-config-row"><input type="text" placeholder="Opción A"><button class="btn-sm btn-red" onclick="this.parentElement.remove()">✕</button></div>
+    <div class="opcion-config-row"><input type="text" placeholder="Opción B"><button class="btn-sm btn-red" onclick="this.parentElement.remove()">✕</button></div>`;
+};
+
+window.eliminarPregunta=async function(i){
+  if(!confirm('¿Eliminar esta pregunta?')) return;
+  const pregs=[...(config.preguntas||[])]; pregs.splice(i,1);
+  await update(ref(db,'enc/config'),{preguntas:pregs});
+};
+
+window.setEstado=async function(estado){ await update(ref(db,'enc/config'),{estado}); };
+window.setModo=async function(modo){ await update(ref(db,'enc/config'),{modo}); };
+window.pregSiguiente=async function(){
+  const max=(config.preguntas||[]).length-1;
+  const next=Math.min((config.pregActiva||0)+1,max);
+  await update(ref(db,'enc/config'),{pregActiva:next});
+};
+window.pregAnterior=async function(){
+  const prev=Math.max((config.pregActiva||0)-1,0);
+  await update(ref(db,'enc/config'),{pregActiva:prev});
+};
+
+window.guardarConfig=async function(){
+  const cfg={
+    titulo:document.getElementById('cfg-titulo').value||config.titulo,
+    desc:document.getElementById('cfg-desc').value||config.desc,
+    pin:document.getElementById('cfg-pin').value||config.pin,
+    estado:config.estado, modo:config.modo,
+    pregActiva:config.pregActiva||0,
+    preguntas:config.preguntas||[]
+  };
+  await set(ref(db,'enc/config'),cfg);
+  const ok=document.getElementById('cfg-ok');
+  ok.style.display='block'; setTimeout(()=>ok.style.display='none',2000);
+};
+
+window.borrarRespuestas=async function(){
+  if(confirm('⚠️ ¿Borrar todas las respuestas?'))
+    if(confirm('Confirma: ¿borrar todo?')) await remove(ref(db,'enc/respuestas'));
+};
+
+window.setTab=function(tab,btn){
+  ['proyeccion','control','config'].forEach(t=>document.getElementById('tab-'+t).style.display=t===tab?'block':'none');
+  document.querySelectorAll('.admin-tab').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  if(tab==='config') renderPreguntasAdmin();
+};
+
+window.goTo=function(id){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  window.scrollTo(0,0);
+};
+</script>
+</body>
+</html>

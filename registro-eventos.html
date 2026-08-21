@@ -1,0 +1,2011 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Registro de Evento</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#f5f5f2;min-height:100vh;color:#1a1a18}
+.app{max-width:720px;margin:0 auto;padding:1rem}
+.screen{display:none}.screen.active{display:block}
+
+/* HERO */
+.hero{border-radius:16px;overflow:hidden;margin-bottom:1.25rem;position:relative;min-height:180px;background:#1a4a8a;display:flex;flex-direction:column;justify-content:flex-end}
+.hero-img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:.35}
+.hero-overlay{position:absolute;inset:0;background:linear-gradient(to bottom,transparent 20%,rgba(0,0,0,.7) 100%)}
+.hero-content{position:relative;padding:1.25rem;color:#fff}
+.hero-logo{width:64px;height:64px;border-radius:10px;object-fit:contain;background:#fff;padding:6px;margin-bottom:10px;display:block}
+.hero-logo-placeholder{width:64px;height:64px;border-radius:10px;background:rgba(255,255,255,.2);display:flex;align-items:center;justify-content:center;font-size:24px;margin-bottom:10px}
+.hero h1{font-size:22px;font-weight:600;margin-bottom:4px;text-shadow:0 1px 3px rgba(0,0,0,.4)}
+.hero h2{font-size:13px;opacity:.85;font-weight:400}
+.hero .evento-fecha{font-size:12px;opacity:.75;margin-top:4px}
+
+.cupo-row{display:flex;align-items:center;gap:8px;padding:8px 10px;border:0.5px solid rgba(0,0,0,.1);border-radius:8px;margin-bottom:6px;flex-wrap:wrap}
+.cupo-row .cupo-nombre{flex:1;font-size:13px;font-weight:500;min-width:120px}
+.cupo-row .cupo-input{width:80px;padding:6px 8px;border:0.5px solid rgba(0,0,0,.2);border-radius:6px;font-size:13px;text-align:center}
+.cupo-row .cupo-info{font-size:11px;color:#888;min-width:80px}
+.cupo-badge{font-size:10px;font-weight:600;padding:2px 8px;border-radius:20px}
+.cupo-ok{background:#E1F5EE;color:#085041}
+.cupo-warn{background:#FFF3CD;color:#7A5200}
+.cupo-full{background:#FCEBEB;color:#A32D2D}
+
+/* Charts */
+.chart-wrap{margin-bottom:1.5rem}
+.chart-title{font-size:13px;font-weight:600;color:#444;margin-bottom:10px;display:flex;justify-content:space-between;align-items:center}
+.chart-title span{font-size:11px;font-weight:400;color:#888}
+.bar-chart{display:flex;flex-direction:column;gap:8px}
+.bar-row{display:flex;align-items:center;gap:8px}
+.bar-label{font-size:12px;color:#555;width:120px;flex-shrink:0;text-overflow:ellipsis;overflow:hidden;white-space:nowrap}
+.bar-track{flex:1;background:#f0f0ee;border-radius:20px;height:22px;overflow:hidden;position:relative}
+.bar-fill-anim{height:100%;border-radius:20px;display:flex;align-items:center;padding-left:8px;font-size:11px;font-weight:500;color:#fff;min-width:28px;transition:width .6s ease}
+.bar-val{font-size:12px;font-weight:500;color:#1a1a18;width:32px;text-align:right;flex-shrink:0}
+.donut-wrap{display:flex;align-items:center;gap:20px;flex-wrap:wrap}
+.donut-svg{flex-shrink:0}
+.donut-legend{display:flex;flex-direction:column;gap:8px}
+.donut-item{display:flex;align-items:center;gap:8px;font-size:13px}
+.donut-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0}
+.kpi-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px;margin-bottom:1rem}
+.kpi-card{background:#fff;border:0.5px solid rgba(0,0,0,.1);border-radius:10px;padding:12px;text-align:center}
+.kpi-card .kpi-val{font-size:28px;font-weight:600;color:var(--color-accent,#1a4a8a)}
+.kpi-card .kpi-lbl{font-size:11px;color:#888;margin-top:3px}
+.kpi-card .kpi-sub{font-size:10px;color:#aaa;margin-top:2px}
+.trend-up{color:#1D9E75;font-size:11px}
+.trend-down{color:#E24B4A;font-size:11px}
+
+/* Cards */
+.card{background:#fff;border:0.5px solid rgba(0,0,0,.1);border-radius:12px;padding:1.25rem;margin-bottom:1rem}
+.intro-btns{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:1rem}
+@media(max-width:420px){.intro-btns{grid-template-columns:1fr}}
+.intro-btn{padding:1.1rem;border:0.5px solid rgba(0,0,0,.12);border-radius:12px;background:#fff;cursor:pointer;text-align:left;transition:all .15s}
+.intro-btn:hover{background:#f0f4ff;border-color:#93b4f5}
+.ib-icon{font-size:24px;margin-bottom:8px}
+.ib-title{font-size:14px;font-weight:500;color:#1a1a18;display:block;margin-bottom:3px}
+.ib-desc{font-size:12px;color:#888;display:block;line-height:1.4}
+
+/* Forms */
+.form-group{margin-bottom:1rem}
+label{display:block;font-size:13px;font-weight:500;color:#444;margin-bottom:5px}
+input,select,textarea{width:100%;padding:10px 12px;border:0.5px solid rgba(0,0,0,.2);border-radius:8px;font-size:14px;color:#1a1a18;background:#fff;font-family:inherit}
+input:focus,select:focus,textarea:focus{outline:none;border-color:var(--color-accent,#1a4a8a);box-shadow:0 0 0 3px rgba(26,74,138,.1)}
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+@media(max-width:480px){.form-grid{grid-template-columns:1fr}}
+
+/* Buttons */
+.btn-primary{color:#fff;border:none;padding:11px 20px;border-radius:8px;font-size:14px;font-weight:500;cursor:pointer;width:100%;margin-top:6px;background:var(--color-accent,#1a4a8a)}
+.btn-primary:hover{filter:brightness(.9)}
+.btn-primary:disabled{opacity:.5;cursor:not-allowed}
+.btn-back{background:none;border:0.5px solid rgba(0,0,0,.15);color:#555;padding:7px 14px;border-radius:8px;font-size:13px;cursor:pointer;margin-bottom:1rem;display:inline-flex;align-items:center;gap:5px}
+.btn-back:hover{background:#f5f5f2}
+.btn-sm{padding:6px 12px;font-size:12px;border-radius:6px;border:none;cursor:pointer;font-weight:500}
+.btn-green{background:#1D9E75;color:#fff}.btn-green:hover{background:#085041}
+.btn-red{background:#E24B4A;color:#fff}.btn-red:hover{background:#b83a39}
+.btn-outline{background:none;border:0.5px solid rgba(0,0,0,.2);color:#555;padding:6px 12px;font-size:12px;border-radius:6px;cursor:pointer}
+.btn-outline:hover{background:#f5f5f2}
+
+/* Success */
+.success-box{border-radius:12px;padding:1.5rem;text-align:center;background:#EEF4FF;border:0.5px solid #93b4f5}
+.success-box h3{font-size:18px;font-weight:500;margin-bottom:6px;color:#1a4a8a}
+.success-box p{font-size:14px;line-height:1.6;color:#2d5faa}
+
+/* Admin */
+.stats-row{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:1rem}
+@media(max-width:480px){.stats-row{grid-template-columns:repeat(2,1fr)}}
+.stat{background:#fff;border:0.5px solid rgba(0,0,0,.1);border-radius:8px;padding:10px 12px;text-align:center}
+.stat .val{font-size:22px;font-weight:500;color:#1a1a18}
+.stat .lbl{font-size:11px;color:#888;margin-top:2px}
+.live-badge{background:#E24B4A;color:#fff;font-size:11px;font-weight:500;padding:4px 10px;border-radius:20px;display:inline-flex;align-items:center;gap:5px}
+.live-dot{width:6px;height:6px;background:#fff;border-radius:50%;animation:pulse 1.2s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
+.admin-tabs{display:flex;gap:0;margin-bottom:1rem;border:0.5px solid rgba(0,0,0,.15);border-radius:8px;overflow:hidden}
+.admin-tab{flex:1;padding:8px;font-size:12px;font-weight:500;color:#555;cursor:pointer;background:#fff;border:none;transition:background .15s}
+.admin-tab.active{background:var(--color-accent,#1a4a8a);color:#fff}
+.reg-list{display:flex;flex-direction:column;gap:8px}
+.reg-card{background:#fff;border:0.5px solid rgba(0,0,0,.1);border-radius:10px;padding:12px;display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}
+.reg-card.presente{border-left:3px solid #1D9E75}
+.reg-card.ausente{border-left:3px solid #ddd}
+.reg-name{font-size:14px;font-weight:500;color:#1a1a18;margin-bottom:2px}
+.reg-detail{font-size:12px;color:#888;line-height:1.5}
+.reg-actions{display:flex;gap:6px;flex-shrink:0}
+.badge{display:inline-block;font-size:10px;font-weight:500;padding:2px 8px;border-radius:20px}
+.badge-presente{background:#E1F5EE;color:#085041}
+.badge-pendiente{background:#f5f5f2;color:#888}
+.empty-state{text-align:center;padding:2rem;color:#888;font-size:14px}
+.status-bar{font-size:12px;color:#085041}
+.cupo-aviso{background:#FFF3CD;border:0.5px solid #F0C040;border-radius:10px;padding:1rem;text-align:center;font-size:14px;color:#7A5200;margin-bottom:1rem}
+.admin-pin{max-width:280px;margin:0 auto;text-align:center}
+.admin-pin input{text-align:center;font-size:22px;letter-spacing:6px;font-weight:500}
+.pin-hint{font-size:12px;color:#888;margin-top:8px}
+.filtro-scroll{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:1rem}
+.filtro-btn{padding:5px 12px;font-size:12px;border-radius:20px;border:0.5px solid rgba(0,0,0,.15);background:#fff;color:#555;cursor:pointer;white-space:nowrap}
+.filtro-btn.active{background:var(--color-accent,#1a4a8a);color:#fff;border-color:var(--color-accent,#1a4a8a)}
+.search-box{width:100%;padding:9px 12px;border:0.5px solid rgba(0,0,0,.2);border-radius:8px;font-size:13px;margin-bottom:1rem;font-family:inherit}
+.search-box:focus{outline:none;border-color:var(--color-accent,#1a4a8a)}
+.grupo-section{margin-bottom:1.5rem}
+.grupo-header{display:flex;justify-content:space-between;align-items:center;padding:8px 12px;background:#EEF4FF;border-radius:8px;margin-bottom:8px}
+.grupo-header h4{font-size:13px;font-weight:600;color:#1a4a8a}
+.grupo-header span{font-size:12px;color:#555}
+.coop-tag{display:inline-flex;align-items:center;gap:6px;padding:5px 10px;background:#f0f4ff;border:0.5px solid #93b4f5;border-radius:20px;font-size:13px;color:#1a4a8a;margin:3px}
+.coop-tag button{background:none;border:none;color:#E24B4A;cursor:pointer;font-size:14px;line-height:1;padding:0}
+.coop-input-row{display:flex;gap:8px;margin-top:8px}
+.coop-input-row input{flex:1}
+
+/* Color picker */
+.color-row{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px}
+.color-dot{width:28px;height:28px;border-radius:50%;cursor:pointer;border:2px solid transparent;transition:transform .15s}
+.color-dot:hover{transform:scale(1.15)}
+.color-dot.selected{border-color:#1a1a18;transform:scale(1.15)}
+
+/* Image upload */
+.upload-box{border:1.5px dashed rgba(0,0,0,.2);border-radius:10px;padding:1rem;text-align:center;cursor:pointer;transition:background .15s}
+.upload-box:hover{background:#f0f4ff}
+.upload-box input{display:none}
+.upload-preview{width:100%;max-height:120px;object-fit:cover;border-radius:8px;margin-top:8px;display:none}
+.logo-preview{width:60px;height:60px;object-fit:contain;border-radius:8px;border:0.5px solid rgba(0,0,0,.1);margin-top:8px;display:none}
+
+.campo-row{display:flex;align-items:center;gap:10px;padding:8px 10px;border:0.5px solid rgba(0,0,0,.1);border-radius:8px;margin-bottom:6px;flex-wrap:wrap}
+.campo-row .campo-nombre{flex:1;font-size:13px;font-weight:500;min-width:100px}
+.toggle-wrap{display:flex;align-items:center;gap:6px;font-size:12px;color:#555}
+.toggle{position:relative;width:36px;height:20px;cursor:pointer}
+.toggle input{opacity:0;width:0;height:0}
+.toggle-slider{position:absolute;inset:0;background:#ddd;border-radius:20px;transition:.3s}
+.toggle-slider:before{content:'';position:absolute;height:14px;width:14px;left:3px;bottom:3px;background:#fff;border-radius:50%;transition:.3s}
+.toggle input:checked + .toggle-slider{background:var(--color-accent,#1a4a8a)}
+.toggle input:checked + .toggle-slider:before{transform:translateX(16px)}
+.req-select{padding:4px 8px;font-size:11px;border-radius:6px;border:0.5px solid rgba(0,0,0,.15);background:#fff;color:#555;cursor:pointer}
+
+/* Email status */
+.email-status{font-size:12px;margin-top:6px;padding:6px 10px;border-radius:6px;display:none}
+.email-ok{background:#E1F5EE;color:#085041}
+.email-err{background:#FCEBEB;color:#A32D2D}
+
+/* Gafete / badge */
+#badge-print-area{display:none}
+.badge-card{width:340px;min-height:480px;margin:0 auto;border:1px solid #ddd;border-radius:14px;overflow:hidden;font-family:system-ui,Arial,sans-serif;background:#fff}
+.badge-head{padding:22px 18px 16px;color:#fff;text-align:center}
+.badge-head img{max-width:80px;max-height:80px;margin-bottom:8px;border-radius:8px;background:#fff;padding:4px}
+.badge-head .badge-evento{font-size:13px;opacity:.9;letter-spacing:.5px;text-transform:uppercase}
+.badge-body{padding:26px 20px;text-align:center}
+.badge-nombre{font-size:26px;font-weight:700;color:#1a1a18;line-height:1.2;margin-bottom:8px}
+.badge-org{font-size:15px;color:#555;margin-bottom:2px}
+.badge-cargo{font-size:13px;color:#888}
+.badge-qr{margin-top:20px}
+.badge-qr img{width:130px;height:130px}
+.badge-foot{font-size:11px;color:#aaa;text-align:center;padding-bottom:16px}
+
+@media print{
+  body *{visibility:hidden}
+  #badge-print-area, #badge-print-area *{visibility:visible}
+  #badge-print-area{display:block;position:fixed;top:0;left:0;width:100%}
+  .badge-card{border:none;margin:20px auto}
+}
+</style>
+</head>
+<body>
+<div class="app">
+
+<!-- INTRO -->
+<div id="screen-intro" class="screen active">
+  <div class="hero" id="hero-section">
+    <img id="hero-img" class="hero-img" src="" alt="" style="display:none">
+    <div class="hero-overlay"></div>
+    <div class="hero-content">
+      <div id="hero-logo-wrap">
+        <div class="hero-logo-placeholder">🏢</div>
+      </div>
+      <h1 id="evento-nombre">Nombre del Evento</h1>
+      <h2 id="evento-org">Organización</h2>
+      <div class="evento-fecha" id="evento-fecha">Fecha · Lugar</div>
+    </div>
+  </div>
+  <div class="card">
+    <p style="font-size:14px;color:#555;margin-bottom:1rem">Selecciona tu rol para continuar:</p>
+    <div class="intro-btns">
+      <button class="intro-btn" onclick="goTo('screen-registro')">
+        <div class="ib-icon">📋</div>
+        <span class="ib-title">Registrarme al evento</span>
+        <span class="ib-desc">Completa tu información para confirmar tu participación</span>
+      </button>
+      <button class="intro-btn" onclick="goTo('screen-pin')">
+        <div class="ib-icon">🔐</div>
+        <span class="ib-title">Administrador</span>
+        <span class="ib-desc">Ver registrados, marcar asistencia y gestionar el evento</span>
+      </button>
+    </div>
+  </div>
+  <div id="cupo-aviso-intro" class="cupo-aviso" style="display:none">⚠️ El registro está cerrado — se alcanzó el cupo máximo.</div>
+</div>
+
+<!-- REGISTRO -->
+<div id="screen-registro" class="screen">
+  <button class="btn-back" onclick="goTo('screen-intro')">← Volver</button>
+  <div class="hero" id="hero-reg" style="min-height:100px">
+    <img id="hero-img-reg" class="hero-img" src="" alt="" style="display:none">
+    <div class="hero-overlay"></div>
+    <div class="hero-content" style="padding:.75rem 1.25rem">
+      <h1 id="reg-evento-nombre" style="font-size:16px">Nombre del Evento</h1>
+    </div>
+  </div>
+  <div class="card">
+    <div class="form-grid" id="reg-form-fields"></div>
+    <div id="reg-error" style="color:#A32D2D;font-size:13px;margin-top:8px;display:none"></div>
+    <button class="btn-primary" id="btn-registrar" onclick="enviarRegistro()">✓ Confirmar mi registro</button>
+  </div>
+</div>
+
+<!-- ÉXITO -->
+<div id="screen-exito" class="screen">
+  <div class="success-box">
+    <div style="font-size:40px;margin-bottom:10px">🎉</div>
+    <h3>¡Registro confirmado!</h3>
+    <p id="exito-msg">Tu participación ha sido registrada exitosamente.</p>
+    <div id="email-status" class="email-status"></div>
+    <div id="qr-container"></div>
+  </div>
+  <button class="btn-primary" style="margin-top:1rem" onclick="goTo('screen-intro')">Volver al inicio</button>
+</div>
+
+<!-- PIN -->
+<div id="screen-pin" class="screen">
+  <button class="btn-back" onclick="goTo('screen-intro')">← Volver</button>
+  <div class="card">
+    <div class="admin-pin">
+      <div style="font-size:32px;margin-bottom:12px">🔐</div>
+      <p style="font-size:14px;color:#555;margin-bottom:1rem">Ingresa el PIN de administrador</p>
+      <input type="password" id="pin-input" placeholder="••••" maxlength="6" onkeyup="if(event.key==='Enter')verificarPin()">
+      <p class="pin-hint">PIN predeterminado: 1234</p>
+      <button class="btn-primary" onclick="verificarPin()" style="margin-top:1rem">Entrar</button>
+      <div id="pin-error" style="color:#A32D2D;font-size:13px;margin-top:8px;display:none">PIN incorrecto</div>
+    </div>
+  </div>
+</div>
+
+<!-- ADMIN -->
+<div id="screen-admin" class="screen">
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem;flex-wrap:wrap;gap:8px">
+    <h3 style="font-size:15px;font-weight:500">Panel de administrador</h3>
+    <div style="display:flex;align-items:center;gap:8px">
+      <span id="cliente-badge" style="font-size:11px;background:#eee;color:#555;padding:3px 9px;border-radius:20px"></span>
+      <div class="live-badge"><div class="live-dot"></div> En vivo</div>
+    </div>
+  </div>
+  <div class="stats-row">
+    <div class="stat"><div class="val" id="stat-total">0</div><div class="lbl">Registrados</div></div>
+    <div class="stat"><div class="val" id="stat-presentes">0</div><div class="lbl">Presentes</div></div>
+    <div class="stat"><div class="val" id="stat-coops">0</div><div class="lbl">Organizaciones</div></div>
+    <div class="stat"><div class="val" id="stat-cupo">∞</div><div class="lbl">Cupo</div></div>
+  </div>
+  <div class="admin-tabs">
+    <button class="admin-tab active" onclick="setAdminTab('lista',this)">📋 Lista</button>
+    <button class="admin-tab" onclick="setAdminTab('grupos',this)">🏢 Org.</button>
+    <button class="admin-tab" onclick="setAdminTab('asistencia',this)">✅ Asist.</button>
+    <button class="admin-tab" onclick="setAdminTab('escaner',this)">📷 Escanear</button>
+    <button class="admin-tab" onclick="setAdminTab('graficas',this)">📊 Gráficas</button>
+    <button class="admin-tab" onclick="setAdminTab('reportes',this)">📄 Reportes</button>
+    <button class="admin-tab" onclick="setAdminTab('config',this)">⚙️ Config</button>
+  </div>
+
+  <!-- LISTA -->
+  <div id="tab-lista">
+    <input class="search-box" type="text" id="search-input" placeholder="🔍 Buscar por nombre, cédula u organización..." oninput="renderLista()">
+    <div class="filtro-scroll" id="filtros-lista"></div>
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;flex-wrap:wrap;gap:8px">
+      <span id="status-bar" class="status-bar">Cargando...</span>
+      <button class="btn-outline" onclick="exportarExcel()">⬇ Exportar Excel</button>
+    </div>
+    <div class="reg-list" id="reg-list"><div class="empty-state">⏳ Esperando registros...</div></div>
+  </div>
+
+  <!-- GRUPOS -->
+  <div id="tab-grupos" style="display:none">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem;flex-wrap:wrap;gap:8px">
+      <span style="font-size:13px;color:#555">Agrupados por organización</span>
+      <button class="btn-outline" onclick="exportarExcel()">⬇ Exportar Excel</button>
+    </div>
+    <div id="reg-grupos"><div class="empty-state">⏳ Esperando registros...</div></div>
+  </div>
+
+  <!-- ASISTENCIA -->
+  <div id="tab-asistencia" style="display:none">
+    <input class="search-box" type="text" id="search-asis-input" placeholder="🔍 Buscar por nombre u organización..." oninput="renderAsistencia()">
+    <div class="filtro-scroll" id="filtros-asis"></div>
+    <div class="filtro-scroll">
+      <button class="filtro-btn active" onclick="setFiltroEstado('todos',this)">Todos</button>
+      <button class="filtro-btn" onclick="setFiltroEstado('presentes',this)">✅ Presentes</button>
+      <button class="filtro-btn" onclick="setFiltroEstado('pendientes',this)">⏳ Pendientes</button>
+    </div>
+    <div class="reg-list" id="reg-asistencia"><div class="empty-state">⏳ Esperando registros...</div></div>
+  </div>
+
+  <!-- ESCÁNER QR -->
+  <div id="tab-escaner" style="display:none">
+    <p style="font-size:13px;color:#555;margin-bottom:10px">Escanea el código QR que recibió cada participante para marcar su asistencia al instante.</p>
+    <div id="qr-reader" style="width:100%;max-width:360px;margin:0 auto"></div>
+    <div style="display:flex;gap:8px;justify-content:center;margin-top:12px">
+      <button class="btn-primary" id="btn-iniciar-escaner" onclick="iniciarEscaner()">▶ Iniciar cámara</button>
+      <button class="btn-outline" id="btn-detener-escaner" onclick="detenerEscaner()" style="display:none">■ Detener</button>
+    </div>
+    <div id="escaner-resultado" style="margin-top:14px;text-align:center;font-size:14px;min-height:24px"></div>
+    <div style="margin-top:24px;padding-top:16px;border-top:1px solid #eee">
+      <p style="font-size:12px;color:#888;margin-bottom:6px">¿Sin cámara disponible? Marca la asistencia manualmente desde la pestaña Asist.</p>
+    </div>
+  </div>
+
+
+  <!-- GRÁFICAS -->
+  <div id="tab-graficas" style="display:none">
+
+    <!-- KPIs -->
+    <div class="kpi-grid" id="kpi-grid"></div>
+
+    <!-- Donut asistencia -->
+    <div class="card">
+      <div class="chart-title">Asistencia general <span id="donut-subtitle"></span></div>
+      <div class="donut-wrap">
+        <svg class="donut-svg" width="120" height="120" viewBox="0 0 120 120" id="donut-svg">
+          <circle cx="60" cy="60" r="48" fill="none" stroke="#f0f0ee" stroke-width="18"/>
+          <circle id="donut-presentes" cx="60" cy="60" r="48" fill="none" stroke="#1D9E75" stroke-width="18" stroke-dasharray="0 302" stroke-linecap="round" transform="rotate(-90 60 60)" style="transition:stroke-dasharray .8s ease"/>
+          <circle id="donut-ausentes" cx="60" cy="60" r="48" fill="none" stroke="#E24B4A" stroke-width="18" stroke-dasharray="0 302" stroke-linecap="round" transform="rotate(-90 60 60)" style="transition:stroke-dasharray .8s ease"/>
+          <text x="60" y="56" text-anchor="middle" font-size="18" font-weight="700" fill="#1a1a18" id="donut-pct">0%</text>
+          <text x="60" y="72" text-anchor="middle" font-size="10" fill="#888">asistencia</text>
+        </svg>
+        <div class="donut-legend" id="donut-legend"></div>
+      </div>
+    </div>
+
+    <!-- Barra por organización -->
+    <div class="card">
+      <div class="chart-title">Participantes por organización <span id="org-subtitle"></span></div>
+      <div class="bar-chart" id="bar-org"></div>
+    </div>
+
+    <!-- Barra asistencia por organización -->
+    <div class="card">
+      <div class="chart-title">Asistencia por organización</div>
+      <div class="bar-chart" id="bar-org-asist"></div>
+    </div>
+
+    <!-- Timeline de registros -->
+    <div class="card">
+      <div class="chart-title">Registros por hora del día <span id="hora-subtitle"></span></div>
+      <div class="bar-chart" id="bar-horas"></div>
+    </div>
+
+  </div>
+
+  <!-- REPORTES -->
+  <div id="tab-reportes" style="display:none">
+    <div class="card">
+      <p style="font-size:14px;font-weight:500;margin-bottom:4px">📧 Recordatorios por correo</p>
+      <p style="font-size:12px;color:#888;margin-bottom:1rem">Envía un recordatorio del evento a los inscritos que dejaron su correo. Usa la misma plantilla de EmailJS configurada en Confirmación por correo (o una específica si la defines en Config).</p>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:8px">
+        <button class="btn-primary" onclick="enviarRecordatorios('pendientes')">Enviar a pendientes</button>
+        <button class="btn-outline" onclick="enviarRecordatorios('todos')">Enviar a todos</button>
+      </div>
+      <div id="recordatorio-status" style="font-size:12px;color:#555"></div>
+    </div>
+
+    <div class="card">
+      <p style="font-size:14px;font-weight:500;margin-bottom:4px">📊 Reportes del evento</p>
+      <p style="font-size:12px;color:#888;margin-bottom:1rem">Genera reportes en Excel o PDF con un clic</p>
+
+      <div style="display:flex;flex-direction:column;gap:10px">
+
+        <div style="border:0.5px solid rgba(0,0,0,.1);border-radius:10px;padding:12px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px">
+          <div>
+            <div style="font-size:14px;font-weight:500;margin-bottom:2px">✅ Lista de presentes</div>
+            <div style="font-size:12px;color:#888">Solo los participantes que asistieron</div>
+          </div>
+          <div style="display:flex;gap:6px">
+            <button class="btn-sm btn-green" onclick="generarReporte('presentes','excel')">⬇ Excel</button>
+            <button class="btn-sm" style="background:#1a4a8a;color:#fff" onclick="generarReporte('presentes','pdf')">⬇ PDF</button>
+          </div>
+        </div>
+
+        <div style="border:0.5px solid rgba(0,0,0,.1);border-radius:10px;padding:12px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px">
+          <div>
+            <div style="font-size:14px;font-weight:500;margin-bottom:2px">⏳ Lista de ausentes</div>
+            <div style="font-size:12px;color:#888">Inscritos que no asistieron</div>
+          </div>
+          <div style="display:flex;gap:6px">
+            <button class="btn-sm btn-green" onclick="generarReporte('ausentes','excel')">⬇ Excel</button>
+            <button class="btn-sm" style="background:#1a4a8a;color:#fff" onclick="generarReporte('ausentes','pdf')">⬇ PDF</button>
+          </div>
+        </div>
+
+        <div style="border:0.5px solid rgba(0,0,0,.1);border-radius:10px;padding:12px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px">
+          <div>
+            <div style="font-size:14px;font-weight:500;margin-bottom:2px">🏢 Resumen por organización</div>
+            <div style="font-size:12px;color:#888">Total inscritos y presentes por organización</div>
+          </div>
+          <div style="display:flex;gap:6px">
+            <button class="btn-sm btn-green" onclick="generarReporte('organizaciones','excel')">⬇ Excel</button>
+            <button class="btn-sm" style="background:#1a4a8a;color:#fff" onclick="generarReporte('organizaciones','pdf')">⬇ PDF</button>
+          </div>
+        </div>
+
+        <div style="border:0.5px solid rgba(0,0,0,.1);border-radius:10px;padding:12px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px">
+          <div>
+            <div style="font-size:14px;font-weight:500;margin-bottom:2px">📈 Comparativo inscritos vs asistentes</div>
+            <div style="font-size:12px;color:#888">Estadística general del evento con porcentajes</div>
+          </div>
+          <div style="display:flex;gap:6px">
+            <button class="btn-sm btn-green" onclick="generarReporte('comparativo','excel')">⬇ Excel</button>
+            <button class="btn-sm" style="background:#1a4a8a;color:#fff" onclick="generarReporte('comparativo','pdf')">⬇ PDF</button>
+          </div>
+        </div>
+
+        <div style="border:0.5px solid rgba(0,0,0,.1);border-radius:10px;padding:12px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px">
+          <div>
+            <div style="font-size:14px;font-weight:500;margin-bottom:2px">📋 Reporte completo</div>
+            <div style="font-size:12px;color:#888">Todos los registros con estado de asistencia</div>
+          </div>
+          <div style="display:flex;gap:6px">
+            <button class="btn-sm btn-green" onclick="generarReporte('completo','excel')">⬇ Excel</button>
+            <button class="btn-sm" style="background:#1a4a8a;color:#fff" onclick="generarReporte('completo','pdf')">⬇ PDF</button>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <div class="card">
+      <p style="font-size:14px;font-weight:500;margin-bottom:4px">🏆 Certificados de participación</p>
+      <p style="font-size:12px;color:#888;margin-bottom:1rem">Genera certificados individuales para cada participante presente</p>
+      <div style="display:flex;flex-direction:column;gap:10px">
+        <div style="border:0.5px solid rgba(0,0,0,.1);border-radius:10px;padding:12px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px">
+          <div>
+            <div style="font-size:14px;font-weight:500;margin-bottom:2px">🏆 Certificado individual</div>
+            <div style="font-size:12px;color:#888">Busca y genera el certificado de un participante</div>
+          </div>
+          <button class="btn-sm" style="background:#1a4a8a;color:#fff" onclick="abrirBuscadorCertificado()">Generar</button>
+        </div>
+        <div style="border:0.5px solid rgba(0,0,0,.1);border-radius:10px;padding:12px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px">
+          <div>
+            <div style="font-size:14px;font-weight:500;margin-bottom:2px">📦 Todos los certificados</div>
+            <div style="font-size:12px;color:#888">Abre los certificados de todos los presentes</div>
+          </div>
+          <button class="btn-sm" style="background:#1a4a8a;color:#fff" onclick="generarTodosCertificados()">Generar todos</button>
+        </div>
+      </div>
+      <div id="buscador-cert" style="display:none;margin-top:1rem">
+        <input class="search-box" type="text" id="cert-search" placeholder="🔍 Buscar participante por nombre..." oninput="filtrarCertificados()" style="margin-bottom:8px">
+        <div id="cert-lista" style="max-height:200px;overflow-y:auto;display:flex;flex-direction:column;gap:6px"></div>
+      </div>
+    </div>
+  </div>
+  <div id="tab-config" style="display:none">
+    <div class="card">
+      <p style="font-size:14px;font-weight:500;margin-bottom:1rem">📋 Datos del evento</p>
+      <div class="form-group">
+        <label>Nombre del evento</label>
+        <input type="text" id="cfg-nombre" placeholder="Ej. Asamblea Anual 2025">
+      </div>
+      <div class="form-group">
+        <label>Organización anfitriona</label>
+        <input type="text" id="cfg-org" placeholder="Ej. Empresa Nacional de Servicios">
+      </div>
+      <div class="form-group">
+        <label>Fecha y lugar</label>
+        <input type="text" id="cfg-fecha" placeholder="Ej. 15 de julio · Santo Domingo">
+      </div>
+      <div class="form-group">
+        <label>Cupo máximo global (0 = sin límite)</label>
+        <input type="number" id="cfg-cupo" placeholder="0" min="0">
+      </div>
+      <div class="form-group">
+        <label>Alerta de cupo (% para notificar)</label>
+        <select id="cfg-alerta-cupo">
+          <option value="80">Alertar al 80% del cupo</option>
+          <option value="90">Alertar al 90% del cupo</option>
+          <option value="100">Solo al llegar al 100%</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>PIN de administrador</label>
+        <input type="text" id="cfg-pin" placeholder="Ej. 1234" maxlength="6">
+      </div>
+    </div>
+
+    <div class="card">
+      <p style="font-size:14px;font-weight:500;margin-bottom:4px">🏢 Cupos por organización</p>
+      <p style="font-size:12px;color:#888;margin-bottom:12px">Asigna un límite de participantes por cada organización. Deja en 0 para sin límite.</p>
+      <div id="cupos-org-list"></div>
+      <div id="cupos-alerta" style="display:none;background:#FFF3CD;border:0.5px solid #F0C040;border-radius:8px;padding:10px 12px;font-size:13px;color:#7A5200;margin-top:8px"></div>
+    </div>
+
+    <div class="card">
+      <p style="font-size:14px;font-weight:500;margin-bottom:4px">🎨 Diseño visual</p>
+      <p style="font-size:12px;color:#888;margin-bottom:12px">Personaliza los colores y la imagen del evento</p>
+      <div class="form-group">
+        <label>Color principal</label>
+        <div class="color-row" id="color-row"></div>
+        <input type="color" id="cfg-color-custom" style="margin-top:8px;width:40px;height:32px;border:none;cursor:pointer;border-radius:6px" title="Color personalizado">
+      </div>
+      <div class="form-group">
+        <label>Logo de la organización</label>
+        <div class="upload-box" onclick="document.getElementById('logo-upload').click()">
+          <div style="font-size:24px;margin-bottom:4px">🖼️</div>
+          <p style="font-size:13px;color:#555">Toca para subir el logo</p>
+          <p style="font-size:11px;color:#888">PNG o JPG, máx. 200KB</p>
+          <input type="file" id="logo-upload" accept="image/*" onchange="subirLogo(this)">
+          <img id="logo-preview" class="logo-preview">
+        </div>
+      </div>
+      <div class="form-group">
+        <label>Imagen de fondo del banner</label>
+        <div class="upload-box" onclick="document.getElementById('banner-upload').click()">
+          <div style="font-size:24px;margin-bottom:4px">🌄</div>
+          <p style="font-size:13px;color:#555">Toca para subir imagen de fondo</p>
+          <p style="font-size:11px;color:#888">JPG o PNG, máx. 500KB</p>
+          <input type="file" id="banner-upload" accept="image/*" onchange="subirBanner(this)">
+          <img id="banner-preview" class="upload-preview">
+        </div>
+      </div>
+      <div class="form-group">
+        <label>Firma del organizador (para certificados)</label>
+        <div class="upload-box" onclick="document.getElementById('firma-upload').click()">
+          <div style="font-size:24px;margin-bottom:4px">✍️</div>
+          <p style="font-size:13px;color:#555">Toca para subir la firma</p>
+          <p style="font-size:11px;color:#888">PNG con fondo transparente, máx. 200KB</p>
+          <input type="file" id="firma-upload" accept="image/*" onchange="subirFirma(this)" style="display:none">
+          <img id="firma-preview" style="max-height:60px;margin-top:8px;display:none">
+        </div>
+      </div>
+      <div class="form-group">
+        <label>Nombre del firmante</label>
+        <input type="text" id="cfg-firmante" placeholder="Ej. Dra. María González">
+      </div>
+      <div class="form-group">
+        <label>Cargo del firmante</label>
+        <input type="text" id="cfg-cargo-firmante" placeholder="Ej. Presidenta del Consejo de Administración">
+      </div>
+
+      <!-- Firmante 2 -->
+      <div id="firmante2-section" style="display:none">
+        <p style="font-size:13px;font-weight:500;color:#444;margin:12px 0 8px">Firmante 2</p>
+        <div class="upload-box" onclick="document.getElementById('firma2-upload').click()" style="margin-bottom:8px">
+          <div style="font-size:18px;margin-bottom:2px">✍️</div>
+          <p style="font-size:12px;color:#555">Firma 2</p>
+          <input type="file" id="firma2-upload" accept="image/*" onchange="subirFirma2(this)" style="display:none">
+          <img id="firma2-preview" style="max-height:50px;margin-top:6px;display:none">
+        </div>
+        <div class="form-group"><label>Nombre firmante 2</label><input type="text" id="cfg-firmante2" placeholder="Nombre"></div>
+        <div class="form-group"><label>Cargo firmante 2</label><input type="text" id="cfg-cargo-firmante2" placeholder="Cargo"></div>
+      </div>
+
+      <!-- Firmante 3 -->
+      <div id="firmante3-section" style="display:none">
+        <p style="font-size:13px;font-weight:500;color:#444;margin:12px 0 8px">Firmante 3</p>
+        <div class="upload-box" onclick="document.getElementById('firma3-upload').click()" style="margin-bottom:8px">
+          <div style="font-size:18px;margin-bottom:2px">✍️</div>
+          <p style="font-size:12px;color:#555">Firma 3</p>
+          <input type="file" id="firma3-upload" accept="image/*" onchange="subirFirma3(this)" style="display:none">
+          <img id="firma3-preview" style="max-height:50px;margin-top:6px;display:none">
+        </div>
+        <div class="form-group"><label>Nombre firmante 3</label><input type="text" id="cfg-firmante3" placeholder="Nombre"></div>
+        <div class="form-group"><label>Cargo firmante 3</label><input type="text" id="cfg-cargo-firmante3" placeholder="Cargo"></div>
+      </div>
+
+      <div class="form-group">
+        <label>Número de firmantes</label>
+        <select id="cfg-num-firmantes" onchange="toggleFirmantes()">
+          <option value="1">1 firmante</option>
+          <option value="2">2 firmantes</option>
+          <option value="3">3 firmantes</option>
+        </select>
+      </div>
+      <button class="btn-primary" onclick="guardarConfig()">💾 Guardar configuración</button>
+      <div id="cfg-ok" style="color:#085041;font-size:13px;margin-top:8px;display:none">✓ Guardado</div>
+    </div>
+
+    <div class="card">
+      <p style="font-size:14px;font-weight:500;margin-bottom:4px">🏆 Configuración del certificado</p>
+      <p style="font-size:12px;color:#888;margin-bottom:12px">Personaliza el diseño y texto del certificado</p>
+      <div class="form-group">
+        <label>Título del certificado</label>
+        <select id="cfg-cert-titulo">
+          <option value="Certificado">Certificado</option>
+          <option value="Diploma">Diploma</option>
+          <option value="Reconocimiento">Reconocimiento</option>
+          <option value="Constancia">Constancia</option>
+          <option value="Certificación">Certificación</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Subtítulo</label>
+        <input type="text" id="cfg-cert-subtitulo" placeholder="Ej. de Participación, de Asistencia, de Excelencia">
+      </div>
+      <div class="form-group">
+        <label>Texto del cuerpo</label>
+        <textarea id="cfg-cert-texto" rows="3" placeholder="Ej. Por su destacada participación en {evento}, celebrado el {fecha}. Su presencia enriqueció este espacio."style="resize:vertical"></textarea>
+        <p style="font-size:11px;color:#888;margin-top:4px">Usa <strong>{evento}</strong>, <strong>{fecha}</strong>, <strong>{nombre}</strong>, <strong>{org}</strong>, <strong>{cargo}</strong> como variables</p>
+      </div>
+      <div class="form-group">
+        <label>Estilo de borde decorativo</label>
+        <select id="cfg-cert-borde">
+          <option value="simple">Simple — línea delgada</option>
+          <option value="doble">Doble — línea doble elegante</option>
+          <option value="ornamental">Ornamental — esquinas decoradas</option>
+          <option value="ninguno">Sin borde</option>
+        </select>
+      </div>
+      <div class="form-group" style="display:flex;align-items:center;gap:10px">
+        <input type="checkbox" id="cfg-cert-sello" style="width:auto;margin:0">
+        <label style="margin:0;font-size:13px">Mostrar sello circular con nombre de la organización</label>
+      </div>
+      <div class="form-group" style="display:flex;align-items:center;gap:10px">
+        <input type="checkbox" id="cfg-cert-numero" style="width:auto;margin:0" checked>
+        <label style="margin:0;font-size:13px">Incluir número de certificado único</label>
+      </div>
+      <button class="btn-primary" onclick="guardarConfig()">💾 Guardar configuración del certificado</button>
+    </div>
+
+    <div class="card">
+      <p style="font-size:14px;font-weight:500;margin-bottom:4px">📧 Confirmación por correo</p>
+      <p style="font-size:12px;color:#888;margin-bottom:12px">Los participantes recibirán un correo al registrarse. Requiere cuenta gratuita en <strong>emailjs.com</strong></p>
+      <div class="form-group">
+        <label>EmailJS Service ID</label>
+        <input type="text" id="cfg-emailjs-service" placeholder="service_xxxxxxx">
+      </div>
+      <div class="form-group">
+        <label>EmailJS Template ID</label>
+        <input type="text" id="cfg-emailjs-template" placeholder="template_xxxxxxx">
+      </div>
+      <div class="form-group">
+        <label>EmailJS Template ID (Recordatorio) — opcional</label>
+        <input type="text" id="cfg-emailjs-template-recordatorio" placeholder="Si lo dejas vacío, se usa la plantilla de arriba">
+      </div>
+      <div class="form-group">
+        <label>EmailJS Public Key</label>
+        <input type="text" id="cfg-emailjs-key" placeholder="xxxxxxxxxxxxxxx">
+      </div>
+      <button class="btn-sm btn-outline" onclick="probarEmail()" style="margin-bottom:8px">📤 Probar correo</button>
+      <button class="btn-primary" onclick="guardarConfig()">💾 Guardar</button>
+    </div>
+
+    <div class="card">
+      <p style="font-size:14px;font-weight:500;margin-bottom:4px">📝 Campos del formulario de registro</p>
+      <p style="font-size:12px;color:#888;margin-bottom:12px">Activa, desactiva y define cuáles campos son obligatorios</p>
+      <div id="campos-config-list"></div>
+    </div>
+
+    <div class="card">
+      <p style="font-size:14px;font-weight:500;margin-bottom:4px">🏢 Empresas e Instituciones</p>
+      <p style="font-size:12px;color:#888;margin-bottom:12px">Estas opciones aparecen en el formulario de registro</p>
+      <div id="coops-tags"></div>
+      <div class="coop-input-row">
+        <input type="text" id="nueva-coop" placeholder="Nombre de la empresa o institución" onkeyup="if(event.key==='Enter')agregarCoop()">
+        <button class="btn-sm btn-green" onclick="agregarCoop()">+ Agregar</button>
+      </div>
+      <div id="coops-ok" style="color:#085041;font-size:12px;margin-top:8px;display:none">✓ Lista actualizada</div>
+    </div>
+
+    <div class="card">
+      <p style="font-size:14px;font-weight:500;margin-bottom:4px">📥 Importar lista desde Excel</p>
+      <p style="font-size:12px;color:#888;margin-bottom:12px">Carga una lista de inscritos desde un archivo .xlsx. Las columnas deben ser: <strong>Nombre, Cedula, Telefono, Email, Organizacion, Cargo</strong></p>
+      <div class="upload-box" onclick="document.getElementById('excel-upload').click()">
+        <div style="font-size:24px;margin-bottom:4px">📊</div>
+        <p style="font-size:13px;color:#555">Toca para seleccionar el archivo Excel</p>
+        <p style="font-size:11px;color:#888">.xlsx — la primera fila debe ser el encabezado</p>
+        <input type="file" id="excel-upload" accept=".xlsx,.xls" onchange="importarExcel(this)" style="display:none">
+      </div>
+      <div id="import-preview" style="display:none;margin-top:12px">
+        <div id="import-info" style="font-size:13px;color:#555;margin-bottom:8px"></div>
+        <div id="import-tabla" style="overflow-x:auto;max-height:200px;overflow-y:auto;border:0.5px solid rgba(0,0,0,.1);border-radius:8px"></div>
+        <button class="btn-primary" id="btn-confirmar-import" onclick="confirmarImport()" style="margin-top:10px">✓ Confirmar importación</button>
+        <div id="import-ok" style="color:#085041;font-size:13px;margin-top:8px;display:none"></div>
+      </div>
+    </div>
+
+    <div class="card" style="border-color:#F09595">
+      <p style="font-size:14px;font-weight:500;color:#A32D2D;margin-bottom:8px">⚠️ Zona de peligro</p>
+      <div style="display:flex;gap:8px;flex-wrap:wrap">
+        <button class="btn-sm btn-red" onclick="cerrarRegistro()">🔒 Cerrar registro</button>
+        <button class="btn-sm btn-red" onclick="borrarTodo()">🗑 Borrar todos los datos</button>
+      </div>
+    </div>
+  </div>
+
+  <button class="btn-back" style="margin-top:1rem" onclick="goTo('screen-intro')">← Salir del panel</button>
+</div>
+
+</div>
+
+<!-- ÁREA DE IMPRESIÓN DE GAFETE (oculta, solo visible al imprimir) -->
+<div id="badge-print-area">
+  <div class="badge-card">
+    <div class="badge-head" id="badge-head">
+      <div class="badge-evento" id="badge-evento-nombre">Evento</div>
+    </div>
+    <div class="badge-body">
+      <div class="badge-nombre" id="badge-nombre">Nombre</div>
+      <div class="badge-org" id="badge-org">Organización</div>
+      <div class="badge-cargo" id="badge-cargo">Cargo</div>
+      <div class="badge-qr"><img id="badge-qr-img" src="" alt="QR"></div>
+    </div>
+    <div class="badge-foot" id="badge-foot">Enlace360 · Plataforma de Gestión de Eventos</div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+<script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
+<script type="module">
+import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
+import { getDatabase, ref, push, set, onValue, update, remove } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js';
+
+const firebaseConfig = {
+  apiKey: "AIzaSyDGTP-yQGULgotUGzvsHvxJnhLI-tII2Js",
+  authDomain: "registro-eventos-dd07b.firebaseapp.com",
+  databaseURL: "https://registro-eventos-dd07b-default-rtdb.firebaseio.com",
+  projectId: "registro-eventos-dd07b",
+  storageBucket: "registro-eventos-dd07b.firebasestorage.app",
+  messagingSenderId: "329341382451",
+  appId: "1:329341382451:web:e5545731565337dab61846"
+};
+
+const COLORES = ['#1a4a8a','#0F6E56','#7F77DD','#E24B4A','#E07B00','#2D7D9A','#5C3D8F','#1a1a18'];
+
+const app = initializeApp(firebaseConfig);
+const db = getDatabase(app);
+
+// --- Multi-cliente: separa los datos por cliente usando ?c=slug en la URL ---
+// Sin el parámetro, usa 'evento' (compatibilidad con el evento ya en curso).
+const _params = new URLSearchParams(location.search);
+const clienteSlug = (_params.get('c')||_params.get('cliente')||'').trim().toLowerCase().replace(/[^a-z0-9_-]/g,'');
+const basePath = clienteSlug ? `clientes/${clienteSlug}` : 'evento';
+{
+  const b=document.getElementById('cliente-badge');
+  if(b) b.textContent = clienteSlug ? `Cliente: ${clienteSlug}` : 'Evento principal';
+}
+
+let registros = {};
+let config = {nombre:'Nombre del Evento',org:'Organización',fecha:'Fecha · Lugar',cupo:0,pin:'1234',cerrado:false,cooperativas:[],color:'#1a4a8a',logo:'',banner:'',emailjsService:'enlace360',emailjsTemplate:'template_shfwlfi',emailjsTemplateRecordatorio:'',emailjsKey:'2dqs3AFSQcZvgYHsM'};
+let filtroOrg='todas', filtroEstado='todos', filtroAsisOrg='todas';
+let adminActivo=false;
+
+onValue(ref(db,`${basePath}/config`),snap=>{
+  if(snap.val()){ config={...config,...snap.val()}; }
+  actualizarUI();
+  renderFormRegistro();
+  renderCamposConfig();
+});
+onValue(ref(db,`${basePath}/registros`),snap=>{
+  registros=snap.val()||{};
+  if(adminActivo){ renderLista();renderGrupos();renderAsistencia();actualizarStats();renderCuposOrg(); }
+  verificarCupo();
+});
+
+function actualizarUI(){
+  // Textos
+  document.getElementById('evento-nombre').textContent=config.nombre;
+  document.getElementById('evento-org').textContent=config.org||'';
+  document.getElementById('evento-fecha').textContent=config.fecha;
+  document.getElementById('reg-evento-nombre').textContent=config.nombre;
+  document.getElementById('stat-cupo').textContent=config.cupo>0?config.cupo:'∞';
+  // Formulario config
+  document.getElementById('cfg-nombre').value=config.nombre||'';
+  document.getElementById('cfg-org').value=config.org||'';
+  document.getElementById('cfg-fecha').value=config.fecha||'';
+  document.getElementById('cfg-cupo').value=config.cupo||0;
+  document.getElementById('cfg-pin').value=config.pin||'1234';
+  document.getElementById('cfg-emailjs-service').value=config.emailjsService||'';
+  document.getElementById('cfg-emailjs-template').value=config.emailjsTemplate||'';
+  document.getElementById('cfg-emailjs-template-recordatorio').value=config.emailjsTemplateRecordatorio||'';
+  document.getElementById('cfg-emailjs-key').value=config.emailjsKey||'';
+  // Firma
+  const cfgFirmante = document.getElementById('cfg-firmante');
+  const cfgCargoFirmante = document.getElementById('cfg-cargo-firmante');
+  if(cfgFirmante) cfgFirmante.value = config.firmante||'';
+  if(cfgCargoFirmante) cfgCargoFirmante.value = config.cargoFirmante||'';
+  if(config.firma){
+    const fp = document.getElementById('firma-preview');
+    if(fp){ fp.src=config.firma; fp.style.display='block'; }
+  }
+  // Certificado config
+  const certTitulo = document.getElementById('cfg-cert-titulo');
+  const certSubtitulo = document.getElementById('cfg-cert-subtitulo');
+  const certTexto = document.getElementById('cfg-cert-texto');
+  const certBorde = document.getElementById('cfg-cert-borde');
+  const certSello = document.getElementById('cfg-cert-sello');
+  const certNumero = document.getElementById('cfg-cert-numero');
+  const numFirmantes = document.getElementById('cfg-num-firmantes');
+  if(certTitulo) certTitulo.value = config.certTitulo||'Certificado';
+  if(certSubtitulo) certSubtitulo.value = config.certSubtitulo||'de Participación';
+  if(certTexto) certTexto.value = config.certTexto||'';
+  if(certBorde) certBorde.value = config.certBorde||'simple';
+  if(certSello) certSello.checked = config.certSello||false;
+  if(certNumero) certNumero.checked = config.certNumero!==false;
+  if(numFirmantes){ numFirmantes.value = config.numFirmantes||1; toggleFirmantes(); }
+  // Firmantes 2 y 3
+  const f2 = document.getElementById('cfg-firmante2');
+  const cf2 = document.getElementById('cfg-cargo-firmante2');
+  const f3 = document.getElementById('cfg-firmante3');
+  const cf3 = document.getElementById('cfg-cargo-firmante3');
+  if(f2) f2.value = config.firmante2||'';
+  if(cf2) cf2.value = config.cargoFirmante2||'';
+  if(f3) f3.value = config.firmante3||'';
+  if(cf3) cf3.value = config.cargoFirmante3||'';
+  if(config.firma2){ const fp2=document.getElementById('firma2-preview'); if(fp2){fp2.src=config.firma2;fp2.style.display='block';} }
+  if(config.firma3){ const fp3=document.getElementById('firma3-preview'); if(fp3){fp3.src=config.firma3;fp3.style.display='block';} }
+  // Color
+  const accent = config.color||'#1a4a8a';
+  document.documentElement.style.setProperty('--color-accent',accent);
+  document.getElementById('hero-section').style.background=accent;
+  document.getElementById('hero-reg').style.background=accent;
+  renderColorRow();
+  // Logo
+  if(config.logo){
+    document.getElementById('hero-logo-wrap').innerHTML=`<img src="${config.logo}" class="hero-logo" alt="logo">`;
+    const lp=document.getElementById('logo-preview');
+    lp.src=config.logo; lp.style.display='block';
+  }
+  // Banner
+  if(config.banner){
+    [document.getElementById('hero-img'),document.getElementById('hero-img-reg')].forEach(img=>{
+      img.src=config.banner; img.style.display='block';
+    });
+    const bp=document.getElementById('banner-preview');
+    bp.src=config.banner; bp.style.display='block';
+  }
+  const alertaCupoEl = document.getElementById('cfg-alerta-cupo');
+  if(alertaCupoEl) alertaCupoEl.value = config.alertaCupo||'80';
+  renderCuposOrg();
+  renderCoopSelect();
+  renderCoopTags();
+  renderFiltros();
+  renderFormRegistro();
+  renderCamposConfig();
+}
+
+function renderColorRow(){
+  const row=document.getElementById('color-row');
+  if(!row) return;
+  row.innerHTML=COLORES.map(c=>`<div class="color-dot ${config.color===c?'selected':''}" style="background:${c}" onclick="seleccionarColor('${c}')"></div>`).join('');
+}
+
+window.seleccionarColor=function(c){
+  config.color=c;
+  document.documentElement.style.setProperty('--color-accent',c);
+  document.getElementById('hero-section').style.background=c;
+  document.getElementById('hero-reg').style.background=c;
+  renderColorRow();
+};
+
+document.getElementById('cfg-color-custom').addEventListener('input',function(){
+  window.seleccionarColor(this.value);
+});
+
+function toBase64(file,maxKB){
+  return new Promise((res,rej)=>{
+    if(file.size>maxKB*1024){ rej(new Error(`El archivo es muy grande. Máximo ${maxKB}KB`)); return; }
+    const r=new FileReader();
+    r.onload=e=>res(e.target.result);
+    r.onerror=rej;
+    r.readAsDataURL(file);
+  });
+}
+
+window.subirLogo=async function(input){
+  try{
+    const b64=await toBase64(input.files[0],200);
+    config.logo=b64;
+    document.getElementById('hero-logo-wrap').innerHTML=`<img src="${b64}" class="hero-logo" alt="logo">`;
+    const lp=document.getElementById('logo-preview');
+    lp.src=b64; lp.style.display='block';
+  }catch(e){ alert(e.message); }
+};
+
+window.subirBanner=async function(input){
+  try{
+    const b64=await toBase64(input.files[0],500);
+    config.banner=b64;
+    [document.getElementById('hero-img'),document.getElementById('hero-img-reg')].forEach(img=>{
+      img.src=b64; img.style.display='block';
+    });
+    const bp=document.getElementById('banner-preview');
+    bp.src=b64; bp.style.display='block';
+  }catch(e){ alert(e.message); }
+};
+
+function renderCoopSelect(){
+  const sel=document.getElementById('f-org-select');
+  const coops=config.cooperativas||[];
+  sel.innerHTML='<option value="">— Selecciona tu empresa o institución —</option>'
+    +coops.map(c=>`<option value="${c}">${c}</option>`).join('')
+    +'<option value="__otra__">Otra (especificar)</option>';
+}
+
+function renderCoopTags(){
+  const coops=config.cooperativas||[];
+  const el=document.getElementById('coops-tags');
+  el.innerHTML=coops.length?coops.map((c,i)=>`<span class="coop-tag">${c}<button onclick="eliminarCoop(${i})">×</button></span>`).join('')
+    :'<p style="font-size:13px;color:#888;margin-bottom:8px">No hay organizaciones aún.</p>';
+}
+
+function renderFiltros(){
+  const coops=config.cooperativas||[];
+  const opts=['todas',...coops,'Otra'];
+  const mk=(arr,activo,fn)=>arr.map(c=>`<button class="filtro-btn ${activo===c?'active':''}" onclick="${fn}('${c}',this)">${c==='todas'?'Todas':c}</button>`).join('');
+  const fl=document.getElementById('filtros-lista');
+  const fa=document.getElementById('filtros-asis');
+  if(fl) fl.innerHTML=mk(opts,filtroOrg,'setFiltroOrg');
+  if(fa) fa.innerHTML=mk(opts,filtroAsisOrg,'setFiltroAsisOrg');
+}
+
+function verificarCupo(){
+  const total=Object.keys(registros).length;
+  const lleno=(config.cupo>0&&total>=config.cupo)||config.cerrado;
+  document.getElementById('cupo-aviso-intro').style.display=lleno?'block':'none';
+}
+
+// ---- CAMPOS CONFIGURABLES ----
+const CAMPOS_DEFAULT = [
+  {id:'nombre',   label:'Nombre completo',         tipo:'text',   activo:true,  requerido:true,  fijo:true,  placeholder:'Ej. María González',         full:true},
+  {id:'cedula',   label:'Cédula o ID',              tipo:'text',   activo:true,  requerido:true,  fijo:false, placeholder:'000-0000000-0'},
+  {id:'telefono', label:'Teléfono',                 tipo:'tel',    activo:true,  requerido:true,  fijo:false, placeholder:'809-000-0000'},
+  {id:'email',    label:'Correo electrónico',       tipo:'email',  activo:true,  requerido:false, fijo:false, placeholder:'correo@ejemplo.com'},
+  {id:'cargo',    label:'Cargo o rol',              tipo:'text',   activo:true,  requerido:false, fijo:false, placeholder:'Ej. Coordinadora, Asociado'},
+  {id:'org',      label:'Empresa / Institución', tipo:'select', activo:true,  requerido:true,  fijo:false, placeholder:'',                           full:true},
+  {id:'ciudad',   label:'Ciudad o municipio',       tipo:'text',   activo:false, requerido:false, fijo:false, placeholder:'Ej. Santo Domingo'},
+  {id:'institucion',label:'Institución educativa',  tipo:'text',   activo:false, requerido:false, fijo:false, placeholder:'Ej. UASD'},
+  {id:'nivel',    label:'Nivel académico',          tipo:'select_nivel', activo:false, requerido:false, fijo:false, placeholder:''},
+  {id:'comentario',label:'Comentario o pregunta',   tipo:'textarea',activo:false, requerido:false, fijo:false, placeholder:'Escribe aquí...', full:true},
+];
+
+function getCampos(){
+  const saved = config.campos||[];
+  if(!saved.length) return CAMPOS_DEFAULT;
+  return CAMPOS_DEFAULT.map(cd=>{
+    const s = saved.find(s=>s.id===cd.id);
+    return s ? {...cd, activo:s.activo, requerido:s.requerido} : cd;
+  });
+}
+
+function renderCamposConfig(){
+  setTimeout(()=>{
+    const el = document.getElementById('campos-config-list');
+    if(!el){ return; }
+    const campos = getCampos();
+    let html = '<div style="display:flex;flex-direction:column;gap:6px">';
+    campos.forEach(c=>{
+      html += `<div style="display:flex;align-items:center;gap:8px;padding:8px 10px;border:0.5px solid rgba(0,0,0,.1);border-radius:8px;flex-wrap:wrap">`;
+      html += `<span style="flex:1;font-size:13px;font-weight:500">${c.label}</span>`;
+      html += `<label style="display:flex;align-items:center;gap:6px;font-size:12px;color:#555;cursor:pointer">
+        <input type="checkbox" ${c.activo?'checked':''} ${c.fijo?'disabled':''} onchange="toggleCampo('${c.id}',this.checked)" style="width:16px;height:16px;cursor:pointer">
+        ${c.activo?'Activo':'Inactivo'}
+      </label>`;
+      if(!c.fijo && c.activo){
+        html += `<select onchange="toggleRequerido('${c.id}',this.value)" style="font-size:11px;padding:4px 8px;border-radius:6px;border:0.5px solid rgba(0,0,0,.2)">
+          <option value="si" ${c.requerido?'selected':''}>Obligatorio *</option>
+          <option value="no" ${!c.requerido?'selected':''}>Opcional</option>
+        </select>`;
+      } else if(c.requerido){
+        html += `<span style="font-size:11px;color:#E24B4A">Obligatorio *</span>`;
+      }
+      html += '</div>';
+    });
+    html += '</div>';
+    el.innerHTML = html;
+  }, 100);
+}
+
+window.toggleCampo = async function(id, activo){
+  const campos = getCampos().map(c=>c.id===id?{...c,activo}:c).map(c=>({id:c.id,activo:c.activo,requerido:c.requerido}));
+  await update(ref(db,`${basePath}/config`),{campos});
+  renderFormRegistro();
+};
+
+window.toggleRequerido = async function(id, val){
+  const campos = getCampos().map(c=>c.id===id?{...c,requerido:val==='si'}:c).map(c=>({id:c.id,activo:c.activo,requerido:c.requerido}));
+  await update(ref(db,`${basePath}/config`),{campos});
+  renderFormRegistro();
+};
+
+function renderFormRegistro(){
+  const container = document.getElementById('reg-form-fields');
+  if(!container) return;
+  const campos = getCampos().filter(c=>c.activo);
+  const coops = config.cooperativas||[];
+  container.innerHTML = campos.map(c=>{
+    const req = c.requerido ? ' *' : '';
+    const full = c.full ? 'style="grid-column:1/-1"' : '';
+    if(c.tipo==='select') return `
+      <div class="form-group" ${full} id="campo-wrap-org">
+        <label>Empresa / Institución${req}</label>
+        <select id="f-org-select" onchange="toggleOtraOrg()">
+          <option value="">— Selecciona tu empresa o institución —</option>
+          ${coops.map(co=>`<option value="${co}">${co}</option>`).join('')}
+          <option value="__otra__">Otra (especificar)</option>
+        </select>
+      </div>
+      <div class="form-group" id="otra-org-group" style="grid-column:1/-1;display:none">
+        <label>Especifica tu organización${req}</label>
+        <input type="text" id="f-org-otra" placeholder="Escribe el nombre de tu organización">
+      </div>
+      <div id="cupo-org-info" style="grid-column:1/-1;font-size:12px;padding:6px 10px;background:#FFF3CD;border-radius:6px;display:none"></div>`;
+    if(c.tipo==='textarea') return `
+      <div class="form-group" ${full}>
+        <label>${c.label}${req}</label>
+        <textarea id="f-${c.id}" placeholder="${c.placeholder}" style="min-height:80px;resize:vertical"></textarea>
+      </div>`;
+    if(c.tipo==='select_nivel') return `
+      <div class="form-group" ${full}>
+        <label>${c.label}${req}</label>
+        <select id="f-${c.id}">
+          <option value="">— Selecciona —</option>
+          <option>Básico</option><option>Secundario</option><option>Técnico</option>
+          <option>Universitario</option><option>Maestría</option><option>Doctorado</option>
+        </select>
+      </div>`;
+    return `
+      <div class="form-group" ${full}>
+        <label>${c.label}${req}</label>
+        <input type="${c.tipo}" id="f-${c.id}" placeholder="${c.placeholder}">
+      </div>`;
+  }).join('');
+}
+
+// ---- FIN CAMPOS CONFIGURABLES ----
+
+window.toggleOtraOrg=function(){
+  const val=document.getElementById('f-org-select').value;
+  document.getElementById('otra-org-group').style.display=val==='__otra__'?'block':'none';
+  // Mostrar info de cupo
+  const cupoInfo = document.getElementById('cupo-org-info');
+  if(cupoInfo && val && val!=='__otra__'){
+    const check = verificarCupoOrg(val);
+    if(check.mensaje){
+      cupoInfo.textContent = check.permitido ? '✓ '+check.mensaje : '⛔ '+check.mensaje;
+      cupoInfo.style.color = check.permitido ? '#7A5200' : '#A32D2D';
+      cupoInfo.style.display='block';
+    } else { cupoInfo.style.display='none'; }
+  } else if(cupoInfo){ cupoInfo.style.display='none'; }
+};
+
+window.goTo=function(id){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  window.scrollTo(0,0);
+  if(id==='screen-registro'){
+    const total=Object.keys(registros).length;
+    if((config.cupo>0&&total>=config.cupo)||config.cerrado){ goTo('screen-intro'); alert('El registro está cerrado.'); return; }
+    renderFormRegistro();
+  }
+  if(id==='screen-grupos') renderGrupos && renderGrupos();
+  if(id==='screen-admin'){ renderLista(); renderGrupos && renderGrupos(); renderAsistencia(); actualizarStats(); renderCuposOrg(); }
+};
+
+window.enviarRegistro=async function(){
+  const campos = getCampos().filter(c=>c.activo);
+  const errDiv=document.getElementById('reg-error');
+  const getVal = id => { const el=document.getElementById('f-'+id); return el?el.value.trim():''; };
+  const nombre = getVal('nombre');
+  const cedula = getVal('cedula');
+  const telefono = getVal('telefono');
+  const email = getVal('email');
+  const cargo = getVal('cargo');
+  const ciudad = getVal('ciudad');
+  const institucion = getVal('institucion');
+  const nivel = getVal('nivel');
+  const comentario = getVal('comentario');
+  const orgSel = document.getElementById('f-org-select')?.value||'';
+  const orgOtra = getVal('org-otra');
+  const org = orgSel==='__otra__'?(orgOtra||'Otra'):orgSel;
+  // Validar requeridos dinámicamente
+  const faltantes = campos.filter(c=>{
+    if(!c.requerido) return false;
+    if(c.id==='org') return !org;
+    const val = getVal(c.id);
+    return !val;
+  });
+  if(faltantes.length){
+    errDiv.textContent=`Completa los campos obligatorios: ${faltantes.map(c=>c.label).join(', ')}`;
+    errDiv.style.color='#A32D2D'; errDiv.style.display='block'; return;
+  }
+  errDiv.style.display='none';
+  // Verificar cupo global
+  const totalActual = Object.keys(registros).length;
+  if(config.cupo>0 && totalActual>=config.cupo){
+    errDiv.textContent='Lo sentimos, el cupo máximo del evento ha sido alcanzado.'; errDiv.style.display='block'; return;
+  }
+  // Verificar cupo por organización
+  const cupoOrgCheck = verificarCupoOrg(org);
+  if(!cupoOrgCheck.permitido){
+    errDiv.textContent=cupoOrgCheck.mensaje; errDiv.style.display='block'; return;
+  }
+  // Mostrar cupos restantes
+  if(cupoOrgCheck.mensaje){
+    errDiv.textContent=cupoOrgCheck.mensaje; errDiv.style.display='block'; errDiv.style.color='#7A5200';
+  } else { errDiv.style.display='none'; }
+  const btn=document.getElementById('btn-registrar');
+  btn.disabled=true; btn.textContent='Enviando...';
+  try{
+    const nuevoRef = await push(ref(db,`${basePath}/registros`),{nombre,cedula,telefono,email,org,cargo,ciudad,institucion,nivel,comentario,presente:false,timestamp:Date.now()});
+    const regKey = nuevoRef.key;
+    const qrUrl = 'https://api.qrserver.com/v1/create-qr-code/?size=220x220&data='+encodeURIComponent(regKey);
+    document.getElementById('exito-msg').textContent=`¡Bienvenido/a, ${nombre}! Tu participación en ${config.nombre} ha sido confirmada.`;
+    const qrCont=document.getElementById('qr-container');
+    qrCont.innerHTML = `<p style="font-size:12px;color:#666;margin-top:14px">Presenta este código al llegar al evento para agilizar tu ingreso</p>
+      <img src="${qrUrl}" alt="Código QR de acceso" style="width:180px;height:180px;margin-top:6px;border:1px solid #eee;border-radius:8px;padding:6px">`;
+    // Enviar correo
+    if(email && config.emailjsService && config.emailjsTemplate && config.emailjsKey){
+      try{
+        emailjs.init(config.emailjsKey);
+        await emailjs.send(config.emailjsService, config.emailjsTemplate,{
+          to_name: nombre,
+          email: email,
+          evento_nombre: config.nombre,
+          evento_fecha: config.fecha,
+          organizacion: org,
+          cargo: cargo,
+          qr_link: qrUrl
+        });
+        const es=document.getElementById('email-status');
+        es.textContent='📧 Correo de confirmación enviado a '+email;
+        es.className='email-status email-ok';
+        es.style.display='block';
+      }catch(e){
+        const es=document.getElementById('email-status');
+        es.textContent='⚠ No se pudo enviar el correo de confirmación';
+        es.className='email-status email-err';
+        es.style.display='block';
+      }
+    }
+    ['f-nombre','f-cedula','f-telefono','f-email','f-cargo','f-org-otra'].forEach(id=>document.getElementById(id).value='');
+    document.getElementById('f-org-select').value='';
+    document.getElementById('otra-org-group').style.display='none';
+    goTo('screen-exito');
+  }catch(e){ errDiv.textContent='Error al enviar. Verifica tu conexión.'; errDiv.style.display='block'; }
+  btn.disabled=false; btn.textContent='✓ Confirmar mi registro';
+};
+
+window.verificarPin=function(){
+  const pin=document.getElementById('pin-input').value;
+  if(pin===config.pin){
+    adminActivo=true;
+    document.getElementById('pin-input').value='';
+    document.getElementById('pin-error').style.display='none';
+    renderLista();renderGrupos();renderAsistencia();actualizarStats();renderFiltros();
+    goTo('screen-admin');
+  } else { document.getElementById('pin-error').style.display='block'; }
+};
+
+function actualizarStats(){
+  const lista=Object.values(registros);
+  document.getElementById('stat-total').textContent=lista.length;
+  document.getElementById('stat-presentes').textContent=lista.filter(r=>r.presente).length;
+  document.getElementById('stat-coops').textContent=new Set(lista.map(r=>r.org)).size;
+}
+
+window.renderLista=function(){
+  const q=(document.getElementById('search-input')?.value||'').toLowerCase();
+  const lista=Object.entries(registros).filter(([k,r])=>{
+    const orgMatch=filtroOrg==='todas'||r.org===filtroOrg||(filtroOrg==='Otra'&&!(config.cooperativas||[]).includes(r.org));
+    const qMatch=!q||r.nombre.toLowerCase().includes(q)||r.cedula.includes(q)||(r.org||'').toLowerCase().includes(q);
+    return orgMatch&&qMatch;
+  }).sort((a,b)=>a[1].timestamp-b[1].timestamp);
+  const el=document.getElementById('reg-list');
+  const sb=document.getElementById('status-bar');
+  if(sb) sb.textContent=`${lista.length} registro(s) · tiempo real`;
+  if(!lista.length){ el.innerHTML='<div class="empty-state">No hay registros para mostrar</div>'; return; }
+  el.innerHTML=lista.map(([k,r])=>`
+    <div class="reg-card ${r.presente?'presente':'ausente'}">
+      <div>
+        <div class="reg-name">${r.nombre}</div>
+        <div class="reg-detail">${r.cedula} · ${r.telefono}<br>${r.org||''}${r.cargo?' · '+r.cargo:''}${r.email?' · '+r.email:''}</div>
+      </div>
+      <div class="reg-actions">
+        <span class="badge ${r.presente?'badge-presente':'badge-pendiente'}">${r.presente?'Presente':'Pendiente'}</span>
+        <button class="btn-sm btn-red" onclick="eliminarRegistro('${k}')">✕</button>
+      </div>
+    </div>`).join('');
+};
+
+window.renderGrupos=function(){
+  const lista=Object.entries(registros).sort((a,b)=>a[1].nombre.localeCompare(b[1].nombre));
+  const el=document.getElementById('reg-grupos');
+  if(!lista.length){ el.innerHTML='<div class="empty-state">⏳ Esperando registros...</div>'; return; }
+  const grupos={};
+  lista.forEach(([k,r])=>{ const o=r.org||'Sin organización'; if(!grupos[o]) grupos[o]=[]; grupos[o].push([k,r]); });
+  el.innerHTML=Object.keys(grupos).sort().map(org=>`
+    <div class="grupo-section">
+      <div class="grupo-header">
+        <h4>🏢 ${org}</h4>
+        <span>${grupos[org].length} participante(s) · ${grupos[org].filter(([k,r])=>r.presente).length} presentes</span>
+      </div>
+      <div class="reg-list">
+        ${grupos[org].map(([k,r])=>`
+          <div class="reg-card ${r.presente?'presente':'ausente'}">
+            <div><div class="reg-name">${r.nombre}</div><div class="reg-detail">${r.cargo||''} · ${r.cedula}</div></div>
+            <span class="badge ${r.presente?'badge-presente':'badge-pendiente'}">${r.presente?'Presente':'Pendiente'}</span>
+          </div>`).join('')}
+      </div>
+    </div>`).join('');
+};
+
+window.renderAsistencia=function(){
+  const q=(document.getElementById('search-asis-input')?.value||'').toLowerCase();
+  const lista=Object.entries(registros).filter(([k,r])=>{
+    const orgMatch=filtroAsisOrg==='todas'||r.org===filtroAsisOrg||(filtroAsisOrg==='Otra'&&!(config.cooperativas||[]).includes(r.org));
+    const estadoMatch=filtroEstado==='todos'||(filtroEstado==='presentes'&&r.presente)||(filtroEstado==='pendientes'&&!r.presente);
+    const qMatch=!q||r.nombre.toLowerCase().includes(q)||(r.org||'').toLowerCase().includes(q);
+    return orgMatch&&estadoMatch&&qMatch;
+  }).sort((a,b)=>a[1].nombre.localeCompare(b[1].nombre));
+  const el=document.getElementById('reg-asistencia');
+  if(!lista.length){ el.innerHTML='<div class="empty-state">No hay registros</div>'; return; }
+  el.innerHTML=lista.map(([k,r])=>`
+    <div class="reg-card ${r.presente?'presente':'ausente'}">
+      <div><div class="reg-name">${r.nombre}</div><div class="reg-detail">${r.org||''} ${r.cargo?'· '+r.cargo:''}</div></div>
+      <div class="reg-actions">
+        <span class="badge ${r.presente?'badge-presente':'badge-pendiente'}">${r.presente?'✅ Presente':'⏳ Pendiente'}</span>
+        ${r.presente?`<button class="btn-sm btn-outline" onclick="imprimirGafete('${k}')">🖨️ Gafete</button>`:''}
+        <button class="btn-sm btn-outline" onclick="togglePresente('${k}',${!r.presente})">
+          ${r.presente?'Desmarcar':'Marcar presente'}
+        </button>
+      </div>
+    </div>`).join('');
+};
+
+window.togglePresente=async(key,val)=>{ await update(ref(db,`${basePath}/registros/${key}`),{presente:val}); };
+window.eliminarRegistro=async function(key){ if(confirm('¿Eliminar este registro?')) await remove(ref(db,`${basePath}/registros/${key}`)); };
+
+window.imprimirGafete=function(key){
+  const r = registros[key];
+  if(!r){ alert('No se encontró el registro.'); return; }
+  const color = config.color || '#1a4a8a';
+  const qrUrl = 'https://api.qrserver.com/v1/create-qr-code/?size=200x200&data='+encodeURIComponent(key);
+  const head = document.getElementById('badge-head');
+  head.style.background = color;
+  head.innerHTML = (config.logo?`<img src="${config.logo}">`:'') + `<div class="badge-evento">${config.nombre||'Evento'}</div>`;
+  document.getElementById('badge-nombre').textContent = r.nombre;
+  document.getElementById('badge-org').textContent = r.org || '';
+  document.getElementById('badge-cargo').textContent = r.cargo || '';
+  document.getElementById('badge-qr-img').src = qrUrl;
+  document.getElementById('badge-foot').textContent = config.org || 'Enlace360 · Plataforma de Gestión de Eventos';
+  setTimeout(()=>window.print(), 150);
+};
+
+let qrScanner=null;
+window.iniciarEscaner=function(){
+  const resDiv=document.getElementById('escaner-resultado');
+  if(typeof Html5Qrcode==='undefined'){ resDiv.innerHTML='<span style="color:#A32D2D">No se pudo cargar el lector de QR. Verifica tu conexión.</span>'; return; }
+  qrScanner = new Html5Qrcode('qr-reader');
+  qrScanner.start(
+    { facingMode: 'environment' },
+    { fps: 10, qrbox: 240 },
+    onEscaneoExitoso,
+    ()=>{}
+  ).then(()=>{
+    document.getElementById('btn-iniciar-escaner').style.display='none';
+    document.getElementById('btn-detener-escaner').style.display='inline-block';
+    resDiv.textContent='';
+  }).catch(err=>{
+    resDiv.innerHTML='<span style="color:#A32D2D">No se pudo acceder a la cámara. Revisa los permisos del navegador.</span>';
+  });
+};
+
+window.detenerEscaner=function(){
+  if(qrScanner){
+    qrScanner.stop().then(()=>{ qrScanner.clear(); qrScanner=null; }).catch(()=>{ qrScanner=null; });
+  }
+  const bi=document.getElementById('btn-iniciar-escaner'), bd=document.getElementById('btn-detener-escaner');
+  if(bi) bi.style.display='inline-block';
+  if(bd) bd.style.display='none';
+};
+
+let ultimoEscaneo='';
+function onEscaneoExitoso(decodedText){
+  if(decodedText===ultimoEscaneo) return; // evita marcar dos veces el mismo QR seguido
+  ultimoEscaneo=decodedText;
+  setTimeout(()=>{ ultimoEscaneo=''; }, 2500);
+  const resDiv=document.getElementById('escaner-resultado');
+  const registro=registros[decodedText];
+  if(!registro){
+    resDiv.innerHTML='<span style="color:#A32D2D">⚠️ Código no reconocido</span>';
+    return;
+  }
+  if(registro.presente){
+    resDiv.innerHTML=`<span style="color:#7A5200">${registro.nombre} ya estaba marcado como presente</span> <button class="btn-sm btn-outline" onclick="imprimirGafete('${decodedText}')">🖨️ Gafete</button>`;
+    return;
+  }
+  togglePresente(decodedText, true);
+  resDiv.innerHTML=`<span style="color:#0F6E56">✓ ${registro.nombre} — ${registro.org||''} marcado presente</span> <button class="btn-sm btn-outline" onclick="imprimirGafete('${decodedText}')">🖨️ Gafete</button>`;
+}
+
+window.setAdminTab=function(tab,btn){
+  ['lista','grupos','asistencia','escaner','graficas','reportes','config'].forEach(t=>document.getElementById('tab-'+t).style.display=t===tab?'block':'none');
+  document.querySelectorAll('.admin-tab').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  if(tab==='graficas') renderGraficas();
+  if(tab==='config') renderCamposConfig();
+  if(tab!=='escaner') detenerEscaner();
+};
+
+window.setFiltroOrg=function(f,btn){
+  filtroOrg=f;
+  document.querySelectorAll('#filtros-lista .filtro-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active'); renderLista();
+};
+
+window.setFiltroAsisOrg=function(f,btn){
+  filtroAsisOrg=f;
+  document.querySelectorAll('#filtros-asis .filtro-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active'); renderAsistencia();
+};
+
+window.setFiltroEstado=function(f,btn){
+  filtroEstado=f;
+  btn.parentElement.querySelectorAll('.filtro-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active'); renderAsistencia();
+};
+
+window.agregarCoop=async function(){
+  const val=document.getElementById('nueva-coop').value.trim();
+  if(!val) return;
+  const coops=[...(config.cooperativas||[])];
+  if(coops.includes(val)){ alert('Ya existe'); return; }
+  coops.push(val);
+  await update(ref(db,`${basePath}/config`),{cooperativas:coops});
+  document.getElementById('nueva-coop').value='';
+  const ok=document.getElementById('coops-ok');
+  ok.style.display='block'; setTimeout(()=>ok.style.display='none',2000);
+};
+
+window.eliminarCoop=async function(i){
+  if(!confirm('¿Eliminar?')) return;
+  const coops=[...(config.cooperativas||[])];
+  coops.splice(i,1);
+  await update(ref(db,`${basePath}/config`),{cooperativas:coops});
+};
+
+window.guardarConfig=async function(){
+  const cfg={
+    nombre:document.getElementById('cfg-nombre').value||config.nombre,
+    org:document.getElementById('cfg-org').value||config.org,
+    fecha:document.getElementById('cfg-fecha').value||config.fecha,
+    cupo:parseInt(document.getElementById('cfg-cupo').value)||0,
+    pin:document.getElementById('cfg-pin').value||config.pin,
+    alertaCupo: document.getElementById('cfg-alerta-cupo')?.value||'80',
+    cuposOrg: config.cuposOrg||{},
+    campos: getCampos().map(c=>({id:c.id,activo:c.activo,requerido:c.requerido})),
+    cerrado:config.cerrado,
+    cooperativas:config.cooperativas||[],
+    color:config.color||'#1a4a8a',
+    logo:config.logo||'',
+    banner:config.banner||'',
+    firma:config.firma||'',
+    firma2:config.firma2||'',
+    firma3:config.firma3||'',
+    firmante:document.getElementById('cfg-firmante').value||'',
+    cargoFirmante:document.getElementById('cfg-cargo-firmante').value||'',
+    firmante2:document.getElementById('cfg-firmante2').value||'',
+    cargoFirmante2:document.getElementById('cfg-cargo-firmante2').value||'',
+    firmante3:document.getElementById('cfg-firmante3').value||'',
+    cargoFirmante3:document.getElementById('cfg-cargo-firmante3').value||'',
+    numFirmantes:parseInt(document.getElementById('cfg-num-firmantes').value)||1,
+    certTitulo:document.getElementById('cfg-cert-titulo').value||'Certificado',
+    certSubtitulo:document.getElementById('cfg-cert-subtitulo').value||'de Participación',
+    certTexto:document.getElementById('cfg-cert-texto').value||'',
+    certBorde:document.getElementById('cfg-cert-borde').value||'simple',
+    certSello:document.getElementById('cfg-cert-sello').checked,
+    certNumero:document.getElementById('cfg-cert-numero').checked,
+    emailjsService:document.getElementById('cfg-emailjs-service').value||'',
+    emailjsTemplate:document.getElementById('cfg-emailjs-template').value||'',
+    emailjsTemplateRecordatorio:document.getElementById('cfg-emailjs-template-recordatorio').value||'',
+    emailjsKey:document.getElementById('cfg-emailjs-key').value||''
+  };
+  await set(ref(db,`${basePath}/config`),cfg);
+  const ok=document.getElementById('cfg-ok');
+  ok.style.display='block'; setTimeout(()=>ok.style.display='none',2000);
+};
+
+window.probarEmail=async function(){
+  const service=document.getElementById('cfg-emailjs-service').value;
+  const template=document.getElementById('cfg-emailjs-template').value;
+  const key=document.getElementById('cfg-emailjs-key').value;
+  if(!service||!template||!key){ alert('Completa los datos de EmailJS primero'); return; }
+  const email=prompt('¿A qué correo envías la prueba?');
+  if(!email) return;
+  try{
+    emailjs.init(key);
+    await emailjs.send(service,template,{to_name:'Prueba',to_email:email,evento_nombre:config.nombre,evento_fecha:config.fecha,evento_org:config.org,organizacion:'Prueba'});
+    alert('✅ Correo enviado correctamente a '+email);
+  }catch(e){ alert('❌ Error: '+e.text||e.message); }
+};
+
+window.enviarRecordatorios=async function(filtro){
+  if(!config.emailjsService||!config.emailjsKey||(!config.emailjsTemplate&&!config.emailjsTemplateRecordatorio)){
+    alert('Configura EmailJS en la sección de Confirmación por correo antes de enviar recordatorios.'); return;
+  }
+  const templateRecordatorio = config.emailjsTemplateRecordatorio || config.emailjsTemplate;
+  let lista = Object.values(registros).filter(r=>r.email);
+  if(filtro==='pendientes') lista = lista.filter(r=>!r.presente);
+  if(!lista.length){ alert('No hay inscritos con correo para ese filtro.'); return; }
+  if(!confirm(`Se enviará un recordatorio a ${lista.length} persona(s). ¿Continuar?`)) return;
+
+  const statusEl=document.getElementById('recordatorio-status');
+  emailjs.init(config.emailjsKey);
+  let enviados=0, fallidos=0;
+  for(let i=0;i<lista.length;i++){
+    const r=lista[i];
+    statusEl.textContent=`Enviando ${i+1}/${lista.length}...`;
+    try{
+      await emailjs.send(config.emailjsService, templateRecordatorio,{
+        to_name: r.nombre,
+        email: r.email,
+        evento_nombre: config.nombre,
+        evento_fecha: config.fecha,
+        organizacion: r.org||'',
+        cargo: r.cargo||''
+      });
+      enviados++;
+    }catch(e){ fallidos++; }
+    await new Promise(res=>setTimeout(res,350)); // evita saturar el límite de EmailJS
+  }
+  statusEl.textContent=`✅ Enviados: ${enviados}${fallidos?` · ❌ Fallidos: ${fallidos}`:''}`;
+};
+
+let importData = [];
+
+window.importarExcel = function(input){
+  const file = input.files[0];
+  if(!file) return;
+  const reader = new FileReader();
+  reader.onload = function(e){
+    try{
+      const wb = XLSX.read(e.target.result, {type:'binary'});
+      const ws = wb.Sheets[wb.SheetNames[0]];
+      const rows = XLSX.utils.sheet_to_json(ws, {defval:''});
+      if(!rows.length){ alert('El archivo está vacío o no tiene el formato correcto'); return; }
+
+      // Mapeo flexible de columnas
+      importData = rows.map(r=>{
+        const get = (...keys) => {
+          for(const k of keys){
+            const found = Object.keys(r).find(rk=>rk.toLowerCase().replace(/\s+/g,'').includes(k.toLowerCase()));
+            if(found && r[found]) return String(r[found]).trim();
+          }
+          return '';
+        };
+        return {
+          nombre: get('nombre','name'),
+          cedula: get('cedula','cedula','id','documento'),
+          telefono: get('telefono','telefono','phone','celular'),
+          email: get('email','correo','mail'),
+          org: get('organizacion','organizacion','cooperativa','empresa','org'),
+          cargo: get('cargo','rol','role','puesto'),
+          presente: false,
+          timestamp: Date.now()
+        };
+      }).filter(r=>r.nombre);
+
+      // Mostrar preview
+      const preview = document.getElementById('import-preview');
+      const info = document.getElementById('import-info');
+      const tabla = document.getElementById('import-tabla');
+      info.innerHTML = `✅ Se encontraron <strong>${importData.length} registros</strong> listos para importar`;
+      tabla.innerHTML = `<table style="width:100%;border-collapse:collapse;font-size:12px">
+        <thead><tr style="background:#f0f4ff">${['Nombre','Cédula','Teléfono','Email','Organización','Cargo'].map(h=>`<th style="padding:6px 8px;text-align:left;border-bottom:0.5px solid rgba(0,0,0,.1)">${h}</th>`).join('')}</tr></thead>
+        <tbody>${importData.slice(0,10).map(r=>`<tr style="border-bottom:0.5px solid rgba(0,0,0,.05)">
+          <td style="padding:5px 8px">${r.nombre}</td>
+          <td style="padding:5px 8px">${r.cedula}</td>
+          <td style="padding:5px 8px">${r.telefono}</td>
+          <td style="padding:5px 8px">${r.email}</td>
+          <td style="padding:5px 8px">${r.org}</td>
+          <td style="padding:5px 8px">${r.cargo}</td>
+        </tr>`).join('')}
+        ${importData.length>10?`<tr><td colspan="6" style="padding:6px 8px;color:#888;text-align:center">... y ${importData.length-10} más</td></tr>`:''}
+        </tbody></table>`;
+      preview.style.display='block';
+    }catch(e){
+      alert('Error al leer el archivo. Verifica que sea un Excel válido (.xlsx)');
+      console.error(e);
+    }
+  };
+  reader.readAsBinaryString(file);
+};
+
+window.confirmarImport = async function(){
+  if(!importData.length) return;
+  const btn = document.getElementById('btn-confirmar-import');
+  btn.disabled=true; btn.textContent='Importando...';
+  try{
+    let count=0;
+    for(const r of importData){
+      await push(ref(db,`${basePath}/registros`), r);
+      count++;
+    }
+    const ok = document.getElementById('import-ok');
+    ok.textContent = `✓ ${count} registros importados exitosamente`;
+    ok.style.display='block';
+    btn.textContent='✓ Importado';
+    importData=[];
+    setTimeout(()=>{ document.getElementById('import-preview').style.display='none'; document.getElementById('excel-upload').value=''; },3000);
+  }catch(e){
+    alert('Error al importar. Verifica tu conexión.');
+    btn.disabled=false; btn.textContent='✓ Confirmar importación';
+  }
+};
+
+window.generarReporte = function(tipo, formato){
+  const lista = Object.values(registros);
+  if(!lista.length){ alert('No hay registros para generar el reporte'); return; }
+
+  const fecha = new Date().toLocaleString('es-DO');
+  const nombreEvento = config.nombre || 'Evento';
+
+  if(formato === 'excel'){
+    let datos = [];
+    let titulo = '';
+
+    if(tipo === 'presentes'){
+      titulo = 'Lista de Presentes';
+      datos = lista.filter(r=>r.presente).map(r=>['Nombre','Cédula','Teléfono','Email','Organización','Cargo'].reduce((o,k,i)=>(o[k]=[r.nombre,r.cedula,r.telefono,r.email||'',r.org||'',r.cargo||''][i],o),{}));
+    } else if(tipo === 'ausentes'){
+      titulo = 'Lista de Ausentes';
+      datos = lista.filter(r=>!r.presente).map(r=>({'Nombre':r.nombre,'Cédula':r.cedula,'Teléfono':r.telefono,'Email':r.email||'','Organización':r.org||'','Cargo':r.cargo||''}));
+    } else if(tipo === 'organizaciones'){
+      titulo = 'Resumen por Organización';
+      const grupos={};
+      lista.forEach(r=>{ const o=r.org||'Sin org'; if(!grupos[o]) grupos[o]={inscritos:0,presentes:0}; grupos[o].inscritos++; if(r.presente) grupos[o].presentes++; });
+      datos = Object.entries(grupos).sort().map(([org,d])=>({'Organización':org,'Inscritos':d.inscritos,'Presentes':d.presentes,'Ausentes':d.inscritos-d.presentes,'% Asistencia':Math.round(d.presentes/d.inscritos*100)+'%'}));
+    } else if(tipo === 'comparativo'){
+      titulo = 'Comparativo Inscritos vs Asistentes';
+      const presentes=lista.filter(r=>r.presente).length;
+      const ausentes=lista.length-presentes;
+      datos=[{'Concepto':'Total inscritos','Cantidad':lista.length,'Porcentaje':'100%'},{'Concepto':'Presentes','Cantidad':presentes,'Porcentaje':Math.round(presentes/lista.length*100)+'%'},{'Concepto':'Ausentes','Cantidad':ausentes,'Porcentaje':Math.round(ausentes/lista.length*100)+'%'}];
+    } else {
+      titulo = 'Reporte Completo';
+      datos = lista.map(r=>({'Nombre':r.nombre,'Cédula':r.cedula,'Teléfono':r.telefono,'Email':r.email||'','Organización':r.org||'','Cargo':r.cargo||'','Asistencia':r.presente?'Presente':'Ausente'}));
+    }
+
+    // Crear Excel con SheetJS
+    const wb = XLSX.utils.book_new();
+    const ws = XLSX.utils.json_to_sheet(datos);
+    // Ajustar anchos de columna
+    const cols = datos.length ? Object.keys(datos[0]).map(k=>({wch:Math.max(k.length,15)})) : [];
+    ws['!cols'] = cols;
+    XLSX.utils.book_append_sheet(wb, ws, titulo.substring(0,31));
+    XLSX.writeFile(wb, `${titulo.replace(/\s+/g,'-')}-${nombreEvento.replace(/\s+/g,'-')}.xlsx`);
+
+  } else if(formato === 'pdf'){
+    // Generar PDF usando ventana de impresión
+    let html = '';
+    let titulo = '';
+    let filas = '';
+    let encabezados = '';
+
+    if(tipo === 'presentes'){
+      titulo = 'Lista de Presentes';
+      const data = lista.filter(r=>r.presente);
+      encabezados = '<th>#</th><th>Nombre</th><th>Cédula</th><th>Organización</th><th>Cargo</th>';
+      filas = data.map((r,i)=>`<tr><td>${i+1}</td><td>${r.nombre}</td><td>${r.cedula}</td><td>${r.org||''}</td><td>${r.cargo||''}</td></tr>`).join('');
+    } else if(tipo === 'ausentes'){
+      titulo = 'Lista de Ausentes';
+      const data = lista.filter(r=>!r.presente);
+      encabezados = '<th>#</th><th>Nombre</th><th>Cédula</th><th>Organización</th><th>Cargo</th>';
+      filas = data.map((r,i)=>`<tr><td>${i+1}</td><td>${r.nombre}</td><td>${r.cedula}</td><td>${r.org||''}</td><td>${r.cargo||''}</td></tr>`).join('');
+    } else if(tipo === 'organizaciones'){
+      titulo = 'Resumen por Organización';
+      const grupos={};
+      lista.forEach(r=>{ const o=r.org||'Sin org'; if(!grupos[o]) grupos[o]={inscritos:0,presentes:0}; grupos[o].inscritos++; if(r.presente) grupos[o].presentes++; });
+      encabezados = '<th>Organización</th><th>Inscritos</th><th>Presentes</th><th>Ausentes</th><th>% Asistencia</th>';
+      filas = Object.entries(grupos).sort().map(([org,d])=>`<tr><td>${org}</td><td>${d.inscritos}</td><td>${d.presentes}</td><td>${d.inscritos-d.presentes}</td><td>${Math.round(d.presentes/d.inscritos*100)}%</td></tr>`).join('');
+    } else if(tipo === 'comparativo'){
+      titulo = 'Comparativo Inscritos vs Asistentes';
+      const presentes=lista.filter(r=>r.presente).length;
+      const ausentes=lista.length-presentes;
+      encabezados = '<th>Concepto</th><th>Cantidad</th><th>Porcentaje</th>';
+      filas = `<tr><td>Total inscritos</td><td>${lista.length}</td><td>100%</td></tr>
+               <tr style="color:green"><td>Presentes</td><td>${presentes}</td><td>${Math.round(presentes/lista.length*100)}%</td></tr>
+               <tr style="color:#E24B4A"><td>Ausentes</td><td>${ausentes}</td><td>${Math.round(ausentes/lista.length*100)}%</td></tr>`;
+    } else {
+      titulo = 'Reporte Completo';
+      encabezados = '<th>#</th><th>Nombre</th><th>Cédula</th><th>Organización</th><th>Cargo</th><th>Asistencia</th>';
+      filas = lista.sort((a,b)=>a.nombre.localeCompare(b.nombre)).map((r,i)=>`<tr><td>${i+1}</td><td>${r.nombre}</td><td>${r.cedula}</td><td>${r.org||''}</td><td>${r.cargo||''}</td><td style="color:${r.presente?'green':'#E24B4A'};font-weight:500">${r.presente?'✓ Presente':'✗ Ausente'}</td></tr>`).join('');
+    }
+
+    const ventana = window.open('','_blank');
+    ventana.document.write(`<!DOCTYPE html><html><head><meta charset="UTF-8">
+    <title>${titulo} - ${nombreEvento}</title>
+    <style>
+      body{font-family:Arial,sans-serif;padding:20px;color:#1a1a18}
+      .report-header{border-bottom:2px solid #1a4a8a;padding-bottom:12px;margin-bottom:20px}
+      .report-header h1{font-size:20px;color:#1a4a8a;margin-bottom:4px}
+      .report-header h2{font-size:14px;font-weight:400;color:#555;margin-bottom:4px}
+      .report-header p{font-size:12px;color:#888}
+      .stats{display:flex;gap:20px;margin-bottom:20px;flex-wrap:wrap}
+      .stat-box{background:#f5f5f2;border-radius:8px;padding:10px 16px;text-align:center}
+      .stat-box .val{font-size:24px;font-weight:600;color:#1a4a8a}
+      .stat-box .lbl{font-size:11px;color:#888}
+      table{width:100%;border-collapse:collapse;font-size:13px}
+      th{background:#1a4a8a;color:#fff;padding:8px 10px;text-align:left}
+      td{padding:7px 10px;border-bottom:0.5px solid rgba(0,0,0,.1)}
+      tr:nth-child(even){background:#f9f9f9}
+      .footer{margin-top:20px;font-size:11px;color:#888;border-top:0.5px solid rgba(0,0,0,.1);padding-top:10px}
+      @media print{button{display:none}}
+    </style></head><body>
+    <div class="report-header">
+      <h1>${titulo}</h1>
+      <h2>${nombreEvento}</h2>
+      <p>${config.fecha||''} · Generado el ${fecha}</p>
+    </div>
+    <div class="stats">
+      <div class="stat-box"><div class="val">${lista.length}</div><div class="lbl">Inscritos</div></div>
+      <div class="stat-box"><div class="val" style="color:green">${lista.filter(r=>r.presente).length}</div><div class="lbl">Presentes</div></div>
+      <div class="stat-box"><div class="val" style="color:#E24B4A">${lista.filter(r=>!r.presente).length}</div><div class="lbl">Ausentes</div></div>
+      <div class="stat-box"><div class="val">${Math.round(lista.filter(r=>r.presente).length/lista.length*100)}%</div><div class="lbl">Asistencia</div></div>
+    </div>
+    <table><thead><tr>${encabezados}</tr></thead><tbody>${filas}</tbody></table>
+    <div class="footer">Sistema de Registro de Eventos · ${fecha}</div>
+    <br><button onclick="window.print()" style="background:#1a4a8a;color:#fff;border:none;padding:10px 20px;border-radius:6px;cursor:pointer;font-size:14px">🖨️ Imprimir / Guardar como PDF</button>
+    </body></html>`);
+    ventana.document.close();
+  }
+};
+
+window.subirFirma = async function(input){
+  try{
+    const b64 = await toBase64(input.files[0], 200);
+    config.firma = b64;
+    const fp = document.getElementById('firma-preview');
+    fp.src = b64; fp.style.display = 'block';
+  }catch(e){ alert(e.message); }
+};
+
+window.toggleFirmantes = function(){
+  const n = parseInt(document.getElementById('cfg-num-firmantes').value)||1;
+  document.getElementById('firmante2-section').style.display = n>=2?'block':'none';
+  document.getElementById('firmante3-section').style.display = n>=3?'block':'none';
+};
+
+window.subirFirma2 = async function(input){
+  try{ const b64=await toBase64(input.files[0],200); config.firma2=b64; const fp=document.getElementById('firma2-preview'); fp.src=b64; fp.style.display='block'; }catch(e){ alert(e.message); }
+};
+window.subirFirma3 = async function(input){
+  try{ const b64=await toBase64(input.files[0],200); config.firma3=b64; const fp=document.getElementById('firma3-preview'); fp.src=b64; fp.style.display='block'; }catch(e){ alert(e.message); }
+};
+
+function getBordeCSS(borde, accent){
+  if(borde==='doble') return `position:absolute;inset:10px;border:3px double ${accent}55;border-radius:2px;pointer-events:none;z-index:1`;
+  if(borde==='ornamental') return `position:absolute;inset:14px;border:1px solid ${accent}44;border-radius:2px;pointer-events:none;z-index:1`;
+  if(borde==='ninguno') return `display:none`;
+  return `position:absolute;inset:12px;border:1px solid ${accent}33;border-radius:2px;pointer-events:none;z-index:1`;
+}
+
+function getOrnamentsHTML(borde, accent){
+  if(borde!=='ornamental') return '';
+  const size='20px'; const style=`position:absolute;width:${size};height:${size};border-color:${accent};border-style:solid;z-index:2`;
+  return `
+    <div style="${style};top:8px;left:8px;border-width:2px 0 0 2px"></div>
+    <div style="${style};top:8px;right:8px;border-width:2px 2px 0 0"></div>
+    <div style="${style};bottom:8px;left:8px;border-width:0 0 2px 2px"></div>
+    <div style="${style};bottom:8px;right:8px;border-width:0 2px 2px 0"></div>`;
+}
+
+function getCertNumero(participante){
+  const hash = (participante.cedula||participante.nombre||'').replace(/\D/g,'').slice(-6).padStart(6,'0');
+  const year = new Date().getFullYear();
+  return `CERT-${year}-${hash}`;
+}
+
+function procesarTexto(texto, participante){
+  return (texto||'Por su destacada participación en <span class="cert-evento">{evento}</span>, celebrado el <span class="cert-evento">{fecha}</span>. Su presencia y contribución enriquecieron este espacio de aprendizaje y colaboración.')
+    .replace(/{evento}/g, `<strong>${config.nombre||'el evento'}</strong>`)
+    .replace(/{fecha}/g, `<strong>${config.fecha||''}</strong>`)
+    .replace(/{nombre}/g, `<strong>${participante.nombre}</strong>`)
+    .replace(/{org}/g, `<strong>${participante.org||''}</strong>`)
+    .replace(/{cargo}/g, `<strong>${participante.cargo||''}</strong>`);
+}
+
+function generarCertificadoHTML(participante){
+  const accent = config.color||'#1a4a8a';
+  const accentLight = accent+'18';
+  const titulo = config.certTitulo||'Certificado';
+  const subtitulo = config.certSubtitulo||'de Participación';
+  const borde = config.certBorde||'simple';
+  const mostrarSello = config.certSello||false;
+  const mostrarNumero = config.certNumero!==false;
+  const numFirmantes = config.numFirmantes||1;
+  const certNum = getCertNumero(participante);
+  const textoBody = procesarTexto(config.certTexto, participante);
+
+  const firmantes = [
+    {firma:config.firma, nombre:config.firmante||'Nombre del Firmante', cargo:config.cargoFirmante||'Cargo'},
+    {firma:config.firma2, nombre:config.firmante2||'', cargo:config.cargoFirmante2||''},
+    {firma:config.firma3, nombre:config.firmante3||'', cargo:config.cargoFirmante3||''},
+  ].slice(0, numFirmantes);
+
+  const firmasHTML = firmantes.map(f=>`
+    <div class="firma-box">
+      ${f.firma?`<img src="${f.firma}" class="firma-img" alt="firma">`:'<div style="height:50px"></div>'}
+      <div class="firma-linea"></div>
+      <div class="firma-nombre">${f.nombre}</div>
+      <div class="firma-cargo">${f.cargo}</div>
+    </div>`).join('');
+
+  const selloHTML = mostrarSello ? `
+    <div style="position:absolute;right:40px;bottom:100px;width:90px;height:90px;border-radius:50%;border:2px solid ${accent}55;display:flex;align-items:center;justify-content:center;text-align:center;opacity:.6;z-index:2">
+      ${config.logo?`<img src="${config.logo}" style="width:60px;height:60px;object-fit:contain;border-radius:50%">`:`<div style="font-size:10px;font-weight:600;color:${accent};line-height:1.3;padding:8px">${(config.org||'').toUpperCase()}</div>`}
+    </div>` : '';
+
+  return `<!DOCTYPE html><html><head><meta charset="UTF-8">
+  <title>${titulo} - ${participante.nombre}</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=Inter:wght@300;400;500&display=swap');
+    *{box-sizing:border-box;margin:0;padding:0}
+    body{background:#f0f0ee;display:flex;justify-content:center;align-items:center;min-height:100vh;padding:20px;font-family:'Inter',sans-serif}
+    .cert{background:#fff;width:900px;min-height:620px;border-radius:4px;display:flex;flex-direction:column;position:relative;overflow:hidden;box-shadow:0 8px 40px rgba(0,0,0,.12)}
+    .cert-border{${getBordeCSS(borde,accent)}}
+    .cert-top{background:${accent};height:8px;width:100%}
+    .cert-bottom{background:${accent};height:8px;width:100%;margin-top:auto}
+    .cert-body{padding:36px 60px;flex:1;display:flex;flex-direction:column;align-items:center;text-align:center;position:relative;z-index:2}
+    .cert-logo{height:56px;object-fit:contain;margin-bottom:12px}
+    .cert-org{font-size:11px;font-weight:500;letter-spacing:.15em;text-transform:uppercase;color:${accent};margin-bottom:16px}
+    .cert-title{font-family:'Playfair Display',serif;font-size:38px;font-weight:400;color:#1a1a18;margin-bottom:4px}
+    .cert-subtitle{font-size:12px;color:#888;margin-bottom:20px;letter-spacing:.08em;text-transform:uppercase}
+    .cert-line{width:60px;height:1px;background:${accent};margin:0 auto 20px}
+    .cert-to{font-size:11px;color:#888;margin-bottom:6px;letter-spacing:.08em;text-transform:uppercase}
+    .cert-name{font-family:'Playfair Display',serif;font-size:40px;font-weight:700;color:${accent};margin-bottom:4px;line-height:1.1}
+    .cert-cargo{font-size:12px;color:#888;margin-bottom:20px}
+    .cert-text{font-size:13px;color:#555;line-height:1.75;max-width:560px;margin-bottom:24px}
+    .cert-evento{font-weight:600;color:#1a1a18}
+    .cert-firmas{display:flex;justify-content:center;gap:${numFirmantes===3?'40px':'80px'};margin-top:auto;padding-top:16px;width:100%}
+    .firma-box{display:flex;flex-direction:column;align-items:center;min-width:${numFirmantes===3?'140px':'160px'}}
+    .firma-img{height:46px;object-fit:contain;margin-bottom:4px}
+    .firma-linea{width:130px;height:0.5px;background:#aaa;margin-bottom:5px}
+    .firma-nombre{font-size:11px;font-weight:600;color:#1a1a18;text-align:center}
+    .firma-cargo{font-size:10px;color:#888;text-align:center;margin-top:2px}
+    .cert-num{font-size:10px;color:#bbb;margin-top:12px;letter-spacing:.05em}
+    .cert-decorl{position:absolute;left:-30px;top:50%;transform:translateY(-50%);width:80px;height:80px;border-radius:50%;background:${accentLight};z-index:0}
+    .cert-decorr{position:absolute;right:-30px;top:50%;transform:translateY(-50%);width:80px;height:80px;border-radius:50%;background:${accentLight};z-index:0}
+    @media print{body{background:#fff;padding:0}.cert{box-shadow:none;width:100%;border-radius:0}.no-print{display:none}}
+  </style></head><body>
+  <div>
+  <div class="cert">
+    <div class="cert-top"></div>
+    <div class="cert-border"></div>
+    <div class="cert-decorl"></div>
+    <div class="cert-decorr"></div>
+    ${getOrnamentsHTML(borde,accent)}
+    ${selloHTML}
+    <div class="cert-body">
+      ${config.logo?`<img src="${config.logo}" class="cert-logo" alt="logo">`:''}
+      <div class="cert-org">${config.org||''}</div>
+      <div class="cert-title">${titulo}</div>
+      <div class="cert-subtitle">${subtitulo}</div>
+      <div class="cert-line"></div>
+      <div class="cert-to">Otorgado a</div>
+      <div class="cert-name">${participante.nombre}</div>
+      <div class="cert-cargo">${participante.cargo||''}${participante.org?' · '+participante.org:''}</div>
+      <div class="cert-text">${textoBody}</div>
+      <div class="cert-firmas">${firmasHTML}</div>
+      ${mostrarNumero?`<div class="cert-num">N° ${certNum} · Emitido el ${new Date().toLocaleDateString('es-DO',{year:'numeric',month:'long',day:'numeric'})}</div>`:`<div class="cert-num">Emitido el ${new Date().toLocaleDateString('es-DO',{year:'numeric',month:'long',day:'numeric'})}</div>`}
+    </div>
+    <div class="cert-bottom"></div>
+  </div>
+  <div style="text-align:center;margin-top:16px" class="no-print">
+    <button onclick="window.print()" style="background:${accent};color:#fff;border:none;padding:10px 24px;border-radius:8px;cursor:pointer;font-size:14px;font-weight:500">🖨️ Imprimir / Guardar como PDF</button>
+  </div>
+  </div></body></html>`;
+}
+
+window.abrirBuscadorCertificado = function(){
+  const el = document.getElementById('buscador-cert');
+  el.style.display = el.style.display==='none' ? 'block' : 'none';
+  filtrarCertificados();
+};
+
+window.filtrarCertificados = function(){
+  const q = (document.getElementById('cert-search')?.value||'').toLowerCase();
+  const presentes = Object.values(registros).filter(r=>r.presente && (!q||r.nombre.toLowerCase().includes(q)));
+  const lista = document.getElementById('cert-lista');
+  if(!presentes.length){ lista.innerHTML='<div style="font-size:13px;color:#888;padding:8px">No se encontraron participantes presentes</div>'; return; }
+  lista.innerHTML = presentes.map(r=>`
+    <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 12px;border:0.5px solid rgba(0,0,0,.1);border-radius:8px;background:#fff">
+      <div>
+        <div style="font-size:13px;font-weight:500">${r.nombre}</div>
+        <div style="font-size:11px;color:#888">${r.org||''} ${r.cargo?'· '+r.cargo:''}</div>
+      </div>
+      <button class="btn-sm" style="background:#1a4a8a;color:#fff;flex-shrink:0" onclick="generarCertificado('${encodeURIComponent(JSON.stringify(r))}')">📄 Generar</button>
+    </div>`).join('');
+};
+
+window.generarCertificado = function(encodedData){
+  const participante = JSON.parse(decodeURIComponent(encodedData));
+  const ventana = window.open('','_blank');
+  ventana.document.write(generarCertificadoHTML(participante));
+  ventana.document.close();
+};
+
+window.generarTodosCertificados = function(){
+  const presentes = Object.values(registros).filter(r=>r.presente);
+  if(!presentes.length){ alert('No hay participantes presentes para generar certificados'); return; }
+  if(presentes.length > 20 && !confirm(`Se abrirán ${presentes.length} ventanas. ¿Continuar?`)) return;
+  presentes.forEach((r,i)=>{
+    setTimeout(()=>{
+      const ventana = window.open('','_blank');
+      if(ventana){ ventana.document.write(generarCertificadoHTML(r)); ventana.document.close(); }
+    }, i * 400);
+  });
+};
+
+function renderGraficas(){
+  const lista = Object.values(registros);
+  const total = lista.length;
+  const presentes = lista.filter(r=>r.presente).length;
+  const ausentes = total - presentes;
+  const pct = total ? Math.round(presentes/total*100) : 0;
+  const accent = config.color||'#1a4a8a';
+
+  // KPIs
+  const kpiGrid = document.getElementById('kpi-grid');
+  if(kpiGrid) kpiGrid.innerHTML = `
+    <div class="kpi-card"><div class="kpi-val" style="color:${accent}">${total}</div><div class="kpi-lbl">Total inscritos</div></div>
+    <div class="kpi-card"><div class="kpi-val" style="color:#1D9E75">${presentes}</div><div class="kpi-lbl">Presentes</div><div class="kpi-sub trend-up">✓ ${pct}% asistencia</div></div>
+    <div class="kpi-card"><div class="kpi-val" style="color:#E24B4A">${ausentes}</div><div class="kpi-lbl">Ausentes</div><div class="kpi-sub trend-down">✗ ${100-pct}% ausentismo</div></div>
+    <div class="kpi-card"><div class="kpi-val" style="color:${accent}">${new Set(lista.map(r=>r.org)).size}</div><div class="kpi-lbl">Organizaciones</div></div>
+  `;
+
+  // Donut
+  const circ = 2 * Math.PI * 48;
+  const presArc = total ? (presentes/total)*circ : 0;
+  const ausArc = total ? (ausentes/total)*circ : 0;
+  const dp = document.getElementById('donut-presentes');
+  const da = document.getElementById('donut-ausentes');
+  const dpct = document.getElementById('donut-pct');
+  const dsub = document.getElementById('donut-subtitle');
+  if(dp){ dp.setAttribute('stroke-dasharray',`${presArc} ${circ-presArc}`); }
+  if(da){ da.setAttribute('stroke-dasharray',`${ausArc} ${circ-ausArc}`); da.setAttribute('stroke-dashoffset',`${-presArc}`); }
+  if(dpct) dpct.textContent = pct+'%';
+  if(dsub) dsub.textContent = `${total} inscritos total`;
+  const legend = document.getElementById('donut-legend');
+  if(legend) legend.innerHTML = `
+    <div class="donut-item"><div class="donut-dot" style="background:#1D9E75"></div><div><strong>${presentes}</strong> presentes (${pct}%)</div></div>
+    <div class="donut-item"><div class="donut-dot" style="background:#E24B4A"></div><div><strong>${ausentes}</strong> ausentes (${100-pct}%)</div></div>
+    <div class="donut-item"><div class="donut-dot" style="background:#f0f0ee;border:1px solid #ddd"></div><div><strong>${total}</strong> inscritos total</div></div>
+  `;
+
+  // Barras por organización
+  const grupos = {};
+  lista.forEach(r=>{ const o=r.org||'Sin org'; if(!grupos[o]) grupos[o]={total:0,presentes:0}; grupos[o].total++; if(r.presente) grupos[o].presentes++; });
+  const orgsSort = Object.entries(grupos).sort((a,b)=>b[1].total-a[1].total);
+  const maxTotal = orgsSort.length ? orgsSort[0][1].total : 1;
+
+  const barOrg = document.getElementById('bar-org');
+  const orgSub = document.getElementById('org-subtitle');
+  if(orgSub) orgSub.textContent = `${orgsSort.length} organización(es)`;
+  if(barOrg) barOrg.innerHTML = orgsSort.map(([org,d])=>`
+    <div class="bar-row">
+      <div class="bar-label" title="${org}">${org}</div>
+      <div class="bar-track">
+        <div class="bar-fill-anim" style="width:${Math.round(d.total/maxTotal*100)}%;background:${accent}">${d.total}</div>
+      </div>
+      <div class="bar-val">${d.total}</div>
+    </div>`).join('');
+
+  // Barras asistencia por organización
+  const barOrgAsist = document.getElementById('bar-org-asist');
+  if(barOrgAsist) barOrgAsist.innerHTML = orgsSort.map(([org,d])=>{
+    const p = d.total ? Math.round(d.presentes/d.total*100) : 0;
+    const color = p>=75?'#1D9E75':p>=50?'#E07B00':'#E24B4A';
+    return `<div class="bar-row">
+      <div class="bar-label" title="${org}">${org}</div>
+      <div class="bar-track">
+        <div class="bar-fill-anim" style="width:${p}%;background:${color}">${p}%</div>
+      </div>
+      <div class="bar-val" style="color:${color}">${d.presentes}/${d.total}</div>
+    </div>`;
+  }).join('');
+
+  // Timeline por hora
+  const horas = {};
+  for(let h=0;h<24;h++) horas[h]=0;
+  lista.forEach(r=>{ if(r.timestamp){ const h=new Date(r.timestamp).getHours(); horas[h]=(horas[h]||0)+1; } });
+  const horasConData = Object.entries(horas).filter(([h,c])=>c>0);
+  const maxH = horasConData.length ? Math.max(...horasConData.map(([h,c])=>c)) : 1;
+  const horaSub = document.getElementById('hora-subtitle');
+  if(horaSub) horaSub.textContent = horasConData.length ? `${horasConData.length} franjas con actividad` : '';
+  const barHoras = document.getElementById('bar-horas');
+  if(barHoras){
+    if(!horasConData.length){ barHoras.innerHTML='<div style="text-align:center;color:#888;font-size:13px;padding:1rem">Sin datos de hora disponibles</div>'; }
+    else { barHoras.innerHTML = horasConData.map(([h,c])=>`
+      <div class="bar-row">
+        <div class="bar-label">${String(h).padStart(2,'0')}:00 hrs</div>
+        <div class="bar-track">
+          <div class="bar-fill-anim" style="width:${Math.round(c/maxH*100)}%;background:${accent}">${c}</div>
+        </div>
+        <div class="bar-val">${c}</div>
+      </div>`).join(''); }
+  }
+}
+
+function renderCuposOrg(){
+  const el = document.getElementById('cupos-org-list');
+  const alertaEl = document.getElementById('cupos-alerta');
+  if(!el) return;
+  const coops = config.cooperativas||[];
+  if(!coops.length){ el.innerHTML='<p style="font-size:13px;color:#888">Primero agrega organizaciones en la sección de abajo.</p>'; return; }
+  const cuposOrg = config.cuposOrg||{};
+  const alertaPct = parseInt(config.alertaCupo)||80;
+  const alertas = [];
+
+  el.innerHTML = coops.map(coop=>{
+    const key = coop.replace(/\s+/g,'_').toLowerCase();
+    const limite = cuposOrg[key]||0;
+    const inscritos = Object.values(registros).filter(r=>r.org===coop).length;
+    const pct = limite>0 ? Math.round(inscritos/limite*100) : 0;
+    let badge='', badgeClass='';
+    if(limite>0){
+      if(inscritos>=limite){ badge='LLENO'; badgeClass='cupo-full'; alertas.push(`⛔ ${coop}: cupo lleno (${inscritos}/${limite})`); }
+      else if(pct>=alertaPct){ badge=`${pct}%`; badgeClass='cupo-warn'; alertas.push(`⚠️ ${coop}: al ${pct}% del cupo (${inscritos}/${limite})`); }
+      else{ badge=`${inscritos}/${limite}`; badgeClass='cupo-ok'; }
+    }
+    return `<div class="cupo-row">
+      <div class="cupo-nombre">${coop}</div>
+      <input class="cupo-input" type="number" min="0" placeholder="0" value="${limite}" onchange="actualizarCupoOrg('${key}',this.value)" title="0 = sin límite">
+      <div class="cupo-info">${inscritos} inscritos</div>
+      ${badge?`<span class="cupo-badge ${badgeClass}">${badge}</span>`:'<span class="cupo-badge" style="background:#f5f5f2;color:#888">Sin límite</span>'}
+    </div>`;
+  }).join('');
+
+  if(alertaEl){
+    if(alertas.length){ alertaEl.innerHTML='<strong>⚠️ Alertas de cupo:</strong><br>'+alertas.join('<br>'); alertaEl.style.display='block'; }
+    else{ alertaEl.style.display='none'; }
+  }
+}
+
+window.actualizarCupoOrg = async function(key, val){
+  const cuposOrg = {...(config.cuposOrg||{})};
+  cuposOrg[key] = parseInt(val)||0;
+  config.cuposOrg = cuposOrg;
+  await update(ref(db,`${basePath}/config`),{cuposOrg});
+};
+
+function verificarCupoOrg(org){
+  if(!org) return {permitido:true, mensaje:''};
+  const cuposOrg = config.cuposOrg||{};
+  const key = org.replace(/\s+/g,'_').toLowerCase();
+  const limite = cuposOrg[key]||0;
+  if(limite===0) return {permitido:true, mensaje:''};
+  const inscritos = Object.values(registros).filter(r=>r.org===org).length;
+  if(inscritos>=limite) return {permitido:false, mensaje:`El cupo para ${org} está lleno (${inscritos}/${limite} participantes).`};
+  const restantes = limite - inscritos;
+  return {permitido:true, mensaje:`Quedan ${restantes} cupo(s) disponibles para ${org}.`};
+}
+
+window.cerrarRegistro=async function(){
+  if(confirm('¿Cerrar el registro?')) await update(ref(db,`${basePath}/config`),{cerrado:true});
+};
+
+window.borrarTodo=async function(){
+  if(confirm('⚠️ ¿Borrar TODOS los registros?'))
+    if(confirm('Confirma: ¿borrar todos los datos?')){
+      await remove(ref(db,`${basePath}/registros`));
+      await update(ref(db,`${basePath}/config`),{cerrado:false});
+    }
+};
+
+window.exportarExcel=function(){
+  const lista=Object.values(registros).sort((a,b)=>a.nombre.localeCompare(b.nombre));
+  if(!lista.length){ alert('No hay registros'); return; }
+  const headers=['Nombre','Cédula','Teléfono','Email','Organización','Cargo','Presente','Fecha registro'];
+  const rows=lista.map(r=>[r.nombre,r.cedula,r.telefono,r.email||'',r.org||'',r.cargo||'',r.presente?'Sí':'No',new Date(r.timestamp).toLocaleString('es-DO')]);
+  const grupos={};
+  lista.forEach(r=>{ const o=r.org||'Sin organización'; if(!grupos[o]) grupos[o]=[]; grupos[o].push(r); });
+  let csv=[headers,...rows].map(r=>r.map(c=>`"${c}"`).join(',')).join('\n');
+  csv+='\n\n"=== RESUMEN POR ORGANIZACIÓN ==="\n"Organización","Total","Presentes"\n';
+  Object.entries(grupos).sort().forEach(([org,m])=>{ csv+=`"${org}","${m.length}","${m.filter(r=>r.presente).length}"\n`; });
+  const blob=new Blob(['\ufeff'+csv],{type:'text/csv;charset=utf-8'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a'); a.href=url;
+  a.download=`registros-${config.nombre.replace(/\s+/g,'-')}-${Date.now()}.csv`;
+  a.click(); URL.revokeObjectURL(url);
+};
+
+actualizarUI();
+</script>
+</body>
+</html>
