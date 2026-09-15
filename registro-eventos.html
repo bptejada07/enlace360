@@ -115,6 +115,7 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--color-ac
 .cupo-aviso{background:#FFF3CD;border:0.5px solid #F0C040;border-radius:10px;padding:1rem;text-align:center;font-size:14px;color:#7A5200;margin-bottom:1rem}
 .admin-pin{max-width:280px;margin:0 auto;text-align:center}
 .admin-pin input{text-align:center;font-size:22px;letter-spacing:6px;font-weight:500}
+#modo-login input{font-size:15px;letter-spacing:normal;font-weight:400;width:100%;padding:10px 12px;border:0.5px solid rgba(0,0,0,.15);border-radius:8px;margin-bottom:4px}
 .pin-hint{font-size:12px;color:#888;margin-top:8px}
 .filtro-scroll{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:1rem}
 .filtro-btn{padding:5px 12px;font-size:12px;border-radius:20px;border:0.5px solid rgba(0,0,0,.15);background:#fff;color:#555;cursor:pointer;white-space:nowrap}
@@ -249,13 +250,31 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--color-ac
 <div id="screen-pin" class="screen">
   <button class="btn-back" onclick="goTo('screen-intro')">← Volver</button>
   <div class="card">
-    <div class="admin-pin">
+    <!-- MODO PIN (heredado) -->
+    <div class="admin-pin" id="modo-pin">
       <div style="font-size:32px;margin-bottom:12px">🔐</div>
       <p style="font-size:14px;color:#555;margin-bottom:1rem">Ingresa el PIN de administrador</p>
       <input type="password" id="pin-input" placeholder="••••" maxlength="6" onkeyup="if(event.key==='Enter')verificarPin()">
       <p class="pin-hint">PIN predeterminado: 1234</p>
       <button class="btn-primary" onclick="verificarPin()" style="margin-top:1rem">Entrar</button>
       <div id="pin-error" style="color:#A32D2D;font-size:13px;margin-top:8px;display:none">PIN incorrecto</div>
+      <p style="margin-top:16px;font-size:13px"><a href="javascript:void(0)" onclick="mostrarLogin()">Iniciar sesión con correo y contraseña →</a></p>
+    </div>
+
+    <!-- MODO LOGIN (correo y contraseña) -->
+    <div class="admin-pin" id="modo-login" style="display:none">
+      <div style="font-size:32px;margin-bottom:12px">🔐</div>
+      <p style="font-size:14px;color:#555;margin-bottom:1rem" id="login-titulo">Inicia sesión como administrador</p>
+      <input type="email" id="login-email" placeholder="correo@ejemplo.com" style="margin-bottom:8px">
+      <input type="password" id="login-password" placeholder="Contraseña">
+      <button class="btn-primary" id="btn-login" onclick="iniciarSesionEmail()" style="margin-top:1rem">Iniciar sesión</button>
+      <div id="login-error" style="color:#A32D2D;font-size:13px;margin-top:8px;display:none"></div>
+      <div id="login-info" style="color:#0F6E56;font-size:13px;margin-top:8px;display:none"></div>
+      <p style="margin-top:16px;font-size:13px" id="login-links">
+        <a href="javascript:void(0)" onclick="mostrarRegistro()">¿No tienes cuenta? Regístrate</a> ·
+        <a href="javascript:void(0)" onclick="recuperarPassword()">¿Olvidaste tu contraseña?</a>
+      </p>
+      <p style="margin-top:8px;font-size:13px"><a href="javascript:void(0)" onclick="mostrarPin()">← Usar PIN en su lugar</a></p>
     </div>
   </div>
 </div>
@@ -698,6 +717,12 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--color-ac
       </div>
     </div>
 
+    <div class="card">
+      <p style="font-size:14px;font-weight:500;margin-bottom:4px">🔐 Cuenta de administrador</p>
+      <p style="font-size:12px;color:#888;margin-bottom:10px" id="admin-email-info">Este evento usa el PIN de acceso (no se ha creado una cuenta de correo todavía).</p>
+      <button class="btn-sm btn-outline" onclick="cerrarSesionAdmin()">Cerrar sesión</button>
+    </div>
+
     <div class="card" style="border-color:#F09595">
       <p style="font-size:14px;font-weight:500;color:#A32D2D;margin-bottom:8px">⚠️ Zona de peligro</p>
       <div style="display:flex;gap:8px;flex-wrap:wrap">
@@ -734,6 +759,7 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--color-ac
 <script type="module">
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
 import { getDatabase, ref, push, set, onValue, update, remove } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js';
+import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, sendPasswordResetEmail, signOut } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js';
 
 const firebaseConfig = {
   apiKey: "AIzaSyDGTP-yQGULgotUGzvsHvxJnhLI-tII2Js",
@@ -749,6 +775,7 @@ const COLORES = ['#1a4a8a','#0F6E56','#7F77DD','#E24B4A','#E07B00','#2D7D9A','#5
 
 const app = initializeApp(firebaseConfig);
 const db = getDatabase(app);
+const auth = getAuth(app);
 
 // --- Multi-cliente: separa los datos por cliente usando ?c=slug en la URL ---
 // Sin el parámetro, usa 'evento' (compatibilidad con el evento ya en curso).
@@ -761,7 +788,7 @@ const basePath = clienteSlug ? `clientes/${clienteSlug}` : 'evento';
 }
 
 let registros = {};
-let config = {nombre:'Nombre del Evento',org:'Organización',fecha:'Fecha · Lugar',cupo:0,pin:'1234',cerrado:false,cooperativas:[],color:'#1a4a8a',logo:'',banner:'',emailjsService:'enlace360',emailjsTemplate:'template_shfwlfi',emailjsTemplateRecordatorio:'',emailjsKey:'2dqs3AFSQcZvgYHsM'};
+let config = {nombre:'Nombre del Evento',org:'Organización',fecha:'Fecha · Lugar',cupo:0,pin:'1234',cerrado:false,cooperativas:[],color:'#1a4a8a',logo:'',banner:'',emailjsService:'enlace360',emailjsTemplate:'template_shfwlfi',emailjsTemplateRecordatorio:'',emailjsKey:'2dqs3AFSQcZvgYHsM',adminEmail:''};
 let filtroOrg='todas', filtroEstado='todos', filtroAsisOrg='todas';
 let adminActivo=false;
 
@@ -770,6 +797,10 @@ onValue(ref(db,`${basePath}/config`),snap=>{
   actualizarUI();
   renderFormRegistro();
   renderCamposConfig();
+  const infoEl=document.getElementById('admin-email-info');
+  if(infoEl) infoEl.textContent = config.adminEmail
+    ? `Cuenta autorizada: ${config.adminEmail}`
+    : 'Este evento usa el PIN de acceso (no se ha creado una cuenta de correo todavía).';
 });
 onValue(ref(db,`${basePath}/registros`),snap=>{
   registros=snap.val()||{};
@@ -1170,6 +1201,102 @@ window.verificarPin=function(){
     renderLista();renderGrupos();renderAsistencia();actualizarStats();renderFiltros();
     goTo('screen-admin');
   } else { document.getElementById('pin-error').style.display='block'; }
+};
+
+let modoRegistro = false;
+
+window.mostrarLogin=function(){
+  document.getElementById('modo-pin').style.display='none';
+  document.getElementById('modo-login').style.display='block';
+  modoRegistro = false;
+  actualizarTextosLogin();
+};
+window.mostrarPin=function(){
+  document.getElementById('modo-login').style.display='none';
+  document.getElementById('modo-pin').style.display='block';
+};
+window.mostrarRegistro=function(){
+  modoRegistro = !modoRegistro;
+  actualizarTextosLogin();
+};
+function actualizarTextosLogin(){
+  document.getElementById('login-error').style.display='none';
+  document.getElementById('login-info').style.display='none';
+  document.getElementById('login-titulo').textContent = modoRegistro ? 'Crea la cuenta de administrador de este evento' : 'Inicia sesión como administrador';
+  document.getElementById('btn-login').textContent = modoRegistro ? 'Crear cuenta' : 'Iniciar sesión';
+  document.getElementById('login-links').innerHTML = modoRegistro
+    ? `<a href="javascript:void(0)" onclick="mostrarRegistro()">¿Ya tienes cuenta? Inicia sesión</a>`
+    : `<a href="javascript:void(0)" onclick="mostrarRegistro()">¿No tienes cuenta? Regístrate</a> · <a href="javascript:void(0)" onclick="recuperarPassword()">¿Olvidaste tu contraseña?</a>`;
+}
+
+window.iniciarSesionEmail=async function(){
+  const email=(document.getElementById('login-email').value||'').trim();
+  const password=document.getElementById('login-password').value||'';
+  const errEl=document.getElementById('login-error'), infoEl=document.getElementById('login-info');
+  errEl.style.display='none'; infoEl.style.display='none';
+  if(!email||!password){ errEl.textContent='Completa correo y contraseña.'; errEl.style.display='block'; return; }
+
+  if(modoRegistro){
+    if(config.adminEmail){ errEl.textContent='Este evento ya tiene un administrador configurado. Inicia sesión en su lugar.'; errEl.style.display='block'; return; }
+    if(password.length<6){ errEl.textContent='La contraseña debe tener al menos 6 caracteres.'; errEl.style.display='block'; return; }
+    try{
+      const cred = await createUserWithEmailAndPassword(auth, email, password);
+      await update(ref(db,`${basePath}/config`),{adminEmail: cred.user.email});
+      config.adminEmail = cred.user.email;
+      entrarAdmin();
+    }catch(e){
+      errEl.textContent = e.code==='auth/email-already-in-use' ? 'Ese correo ya tiene una cuenta creada. Intenta iniciar sesión.' : 'No se pudo crear la cuenta: '+(e.message||e.code);
+      errEl.style.display='block';
+    }
+  } else {
+    try{
+      const cred = await signInWithEmailAndPassword(auth, email, password);
+      if(config.adminEmail && cred.user.email.toLowerCase()!==config.adminEmail.toLowerCase()){
+        await signOut(auth);
+        errEl.textContent='Esta cuenta no tiene permisos de administrador para este evento.';
+        errEl.style.display='block';
+        return;
+      }
+      if(!config.adminEmail){
+        // Primer inicio de sesión sin admin asignado aún: lo asigna a esta cuenta.
+        await update(ref(db,`${basePath}/config`),{adminEmail: cred.user.email});
+        config.adminEmail = cred.user.email;
+      }
+      entrarAdmin();
+    }catch(e){
+      errEl.textContent = 'Correo o contraseña incorrectos.';
+      errEl.style.display='block';
+    }
+  }
+};
+
+window.recuperarPassword=async function(){
+  const email=(document.getElementById('login-email').value||'').trim();
+  const infoEl=document.getElementById('login-info'), errEl=document.getElementById('login-error');
+  if(!email){ errEl.textContent='Escribe tu correo arriba primero, luego presiona este enlace.'; errEl.style.display='block'; return; }
+  try{
+    await sendPasswordResetEmail(auth, email);
+    errEl.style.display='none';
+    infoEl.textContent='Te enviamos un correo con instrucciones para restablecer tu contraseña.';
+    infoEl.style.display='block';
+  }catch(e){
+    errEl.textContent='No se pudo enviar el correo de recuperación. Verifica que esté escrito correctamente.';
+    errEl.style.display='block';
+  }
+};
+
+function entrarAdmin(){
+  adminActivo=true;
+  document.getElementById('login-email').value='';
+  document.getElementById('login-password').value='';
+  renderLista();renderGrupos();renderAsistencia();actualizarStats();renderFiltros();
+  goTo('screen-admin');
+}
+
+window.cerrarSesionAdmin=async function(){
+  adminActivo=false;
+  try{ await signOut(auth); }catch(e){}
+  goTo('screen-intro');
 };
 
 function actualizarStats(){
