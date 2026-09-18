@@ -250,21 +250,11 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--color-ac
 <div id="screen-pin" class="screen">
   <button class="btn-back" onclick="goTo('screen-intro')">← Volver</button>
   <div class="card">
-    <!-- MODO PIN (heredado) -->
-    <div class="admin-pin" id="modo-pin">
-      <div style="font-size:32px;margin-bottom:12px">🔐</div>
-      <p style="font-size:14px;color:#555;margin-bottom:1rem">Ingresa el PIN de administrador</p>
-      <input type="password" id="pin-input" placeholder="••••" maxlength="6" onkeyup="if(event.key==='Enter')verificarPin()">
-      <p class="pin-hint">PIN predeterminado: 1234</p>
-      <button class="btn-primary" onclick="verificarPin()" style="margin-top:1rem">Entrar</button>
-      <div id="pin-error" style="color:#A32D2D;font-size:13px;margin-top:8px;display:none">PIN incorrecto</div>
-      <p style="margin-top:16px;font-size:13px"><a href="javascript:void(0)" onclick="mostrarLogin()">Iniciar sesión con correo y contraseña →</a></p>
-    </div>
-
-    <!-- MODO LOGIN (correo y contraseña) -->
-    <div class="admin-pin" id="modo-login" style="display:none">
+    <!-- LOGIN (correo y contraseña) -->
+    <div class="admin-pin" id="modo-login">
       <div style="font-size:32px;margin-bottom:12px">🔐</div>
       <p style="font-size:14px;color:#555;margin-bottom:1rem" id="login-titulo">Inicia sesión como administrador</p>
+      <p style="font-size:12px;color:#999;margin-bottom:14px">¿Primera vez aquí? Toca "Regístrate" abajo para crear la cuenta de administrador de este evento.</p>
       <input type="email" id="login-email" placeholder="correo@ejemplo.com" style="margin-bottom:8px">
       <input type="password" id="login-password" placeholder="Contraseña">
       <button class="btn-primary" id="btn-login" onclick="iniciarSesionEmail()" style="margin-top:1rem">Iniciar sesión</button>
@@ -274,7 +264,6 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--color-ac
         <a href="javascript:void(0)" onclick="mostrarRegistro()">¿No tienes cuenta? Regístrate</a> ·
         <a href="javascript:void(0)" onclick="recuperarPassword()">¿Olvidaste tu contraseña?</a>
       </p>
-      <p style="margin-top:8px;font-size:13px"><a href="javascript:void(0)" onclick="mostrarPin()">← Usar PIN en su lugar</a></p>
     </div>
   </div>
 </div>
@@ -519,10 +508,6 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--color-ac
           <option value="90">Alertar al 90% del cupo</option>
           <option value="100">Solo al llegar al 100%</option>
         </select>
-      </div>
-      <div class="form-group">
-        <label>PIN de administrador</label>
-        <input type="text" id="cfg-pin" placeholder="Ej. 1234" maxlength="6">
       </div>
     </div>
 
@@ -820,7 +805,6 @@ function actualizarUI(){
   document.getElementById('cfg-org').value=config.org||'';
   document.getElementById('cfg-fecha').value=config.fecha||'';
   document.getElementById('cfg-cupo').value=config.cupo||0;
-  document.getElementById('cfg-pin').value=config.pin||'1234';
   document.getElementById('cfg-emailjs-service').value=config.emailjsService||'';
   document.getElementById('cfg-emailjs-template').value=config.emailjsTemplate||'';
   document.getElementById('cfg-emailjs-template-recordatorio').value=config.emailjsTemplateRecordatorio||'';
@@ -1192,29 +1176,8 @@ window.enviarRegistro=async function(){
   btn.disabled=false; btn.textContent='✓ Confirmar mi registro';
 };
 
-window.verificarPin=function(){
-  const pin=document.getElementById('pin-input').value;
-  if(pin===config.pin){
-    adminActivo=true;
-    document.getElementById('pin-input').value='';
-    document.getElementById('pin-error').style.display='none';
-    renderLista();renderGrupos();renderAsistencia();actualizarStats();renderFiltros();
-    goTo('screen-admin');
-  } else { document.getElementById('pin-error').style.display='block'; }
-};
-
 let modoRegistro = false;
 
-window.mostrarLogin=function(){
-  document.getElementById('modo-pin').style.display='none';
-  document.getElementById('modo-login').style.display='block';
-  modoRegistro = false;
-  actualizarTextosLogin();
-};
-window.mostrarPin=function(){
-  document.getElementById('modo-login').style.display='none';
-  document.getElementById('modo-pin').style.display='block';
-};
 window.mostrarRegistro=function(){
   modoRegistro = !modoRegistro;
   actualizarTextosLogin();
@@ -1493,7 +1456,6 @@ window.guardarConfig=async function(){
     org:document.getElementById('cfg-org').value||config.org,
     fecha:document.getElementById('cfg-fecha').value||config.fecha,
     cupo:parseInt(document.getElementById('cfg-cupo').value)||0,
-    pin:document.getElementById('cfg-pin').value||config.pin,
     alertaCupo: document.getElementById('cfg-alerta-cupo')?.value||'80',
     cuposOrg: config.cuposOrg||{},
     campos: getCampos().map(c=>({id:c.id,activo:c.activo,requerido:c.requerido})),
