@@ -394,6 +394,25 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--color-ac
     </div>
 
     <div class="card">
+      <p style="font-size:14px;font-weight:500;margin-bottom:4px">📢 Comunicados</p>
+      <p style="font-size:12px;color:#888;margin-bottom:1rem">Envía un anuncio con tu propio mensaje a los inscritos (un cambio de última hora, agradecimiento post-evento, etc.). Requiere una plantilla de EmailJS con la variable <code>{{mensaje}}</code> — configúrala en Config → Confirmación por correo.</p>
+      <div class="form-group">
+        <label>Destinatarios</label>
+        <select id="comunicado-destino">
+          <option value="todos">Todos los inscritos con correo</option>
+          <option value="presentes">Solo los que asistieron (presentes)</option>
+          <option value="pendientes">Solo los pendientes (no asistieron)</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Mensaje</label>
+        <textarea id="comunicado-mensaje" rows="4" placeholder="Escribe aquí el mensaje que recibirán los inscritos..." style="width:100%;padding:10px 12px;border:0.5px solid rgba(0,0,0,.15);border-radius:8px;font-family:inherit;font-size:14px"></textarea>
+      </div>
+      <button class="btn-primary" onclick="enviarComunicado()">Enviar comunicado</button>
+      <div id="comunicado-status" style="font-size:12px;color:#555;margin-top:8px"></div>
+    </div>
+
+    <div class="card">
       <p style="font-size:14px;font-weight:500;margin-bottom:4px">📊 Reportes del evento</p>
       <p style="font-size:12px;color:#888;margin-bottom:1rem">Genera reportes en Excel o PDF con un clic</p>
 
@@ -661,6 +680,10 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--color-ac
         <input type="text" id="cfg-emailjs-template-recordatorio" placeholder="Si lo dejas vacío, se usa la plantilla de arriba">
       </div>
       <div class="form-group">
+        <label>EmailJS Template ID (Comunicados) — necesaria para enviar anuncios</label>
+        <input type="text" id="cfg-emailjs-template-anuncio" placeholder="Debe tener la variable {{mensaje}}">
+      </div>
+      <div class="form-group">
         <label>EmailJS Public Key</label>
         <input type="text" id="cfg-emailjs-key" placeholder="xxxxxxxxxxxxxxx">
       </div>
@@ -773,7 +796,7 @@ const basePath = clienteSlug ? `clientes/${clienteSlug}` : 'evento';
 }
 
 let registros = {};
-let config = {nombre:'Nombre del Evento',org:'Organización',fecha:'Fecha · Lugar',cupo:0,pin:'1234',cerrado:false,cooperativas:[],color:'#1a4a8a',logo:'',banner:'',emailjsService:'enlace360',emailjsTemplate:'template_shfwlfi',emailjsTemplateRecordatorio:'',emailjsKey:'2dqs3AFSQcZvgYHsM',adminEmail:''};
+let config = {nombre:'Nombre del Evento',org:'Organización',fecha:'Fecha · Lugar',cupo:0,pin:'1234',cerrado:false,cooperativas:[],color:'#1a4a8a',logo:'',banner:'',emailjsService:'enlace360',emailjsTemplate:'template_shfwlfi',emailjsTemplateRecordatorio:'',emailjsTemplateAnuncio:'',emailjsKey:'2dqs3AFSQcZvgYHsM',adminEmail:''};
 let filtroOrg='todas', filtroEstado='todos', filtroAsisOrg='todas';
 let adminActivo=false;
 
@@ -808,6 +831,7 @@ function actualizarUI(){
   document.getElementById('cfg-emailjs-service').value=config.emailjsService||'';
   document.getElementById('cfg-emailjs-template').value=config.emailjsTemplate||'';
   document.getElementById('cfg-emailjs-template-recordatorio').value=config.emailjsTemplateRecordatorio||'';
+  document.getElementById('cfg-emailjs-template-anuncio').value=config.emailjsTemplateAnuncio||'';
   document.getElementById('cfg-emailjs-key').value=config.emailjsKey||'';
   // Firma
   const cfgFirmante = document.getElementById('cfg-firmante');
@@ -1483,6 +1507,7 @@ window.guardarConfig=async function(){
     emailjsService:document.getElementById('cfg-emailjs-service').value||'',
     emailjsTemplate:document.getElementById('cfg-emailjs-template').value||'',
     emailjsTemplateRecordatorio:document.getElementById('cfg-emailjs-template-recordatorio').value||'',
+    emailjsTemplateAnuncio:document.getElementById('cfg-emailjs-template-anuncio').value||'',
     emailjsKey:document.getElementById('cfg-emailjs-key').value||''
   };
   await set(ref(db,`${basePath}/config`),cfg);
@@ -1534,6 +1559,47 @@ window.enviarRecordatorios=async function(filtro){
     await new Promise(res=>setTimeout(res,350)); // evita saturar el límite de EmailJS
   }
   statusEl.textContent=`✅ Enviados: ${enviados}${fallidos?` · ❌ Fallidos: ${fallidos}`:''}`;
+};
+
+window.enviarComunicado=async function(){
+  const statusEl=document.getElementById('comunicado-status');
+  if(!config.emailjsService||!config.emailjsKey||!config.emailjsTemplateAnuncio){
+    statusEl.style.color='#A32D2D';
+    statusEl.textContent='Configura la plantilla de EmailJS para Comunicados en Config → Confirmación por correo.';
+    return;
+  }
+  const mensaje=(document.getElementById('comunicado-mensaje').value||'').trim();
+  if(!mensaje){ statusEl.style.color='#A32D2D'; statusEl.textContent='Escribe un mensaje antes de enviar.'; return; }
+
+  const destino=document.getElementById('comunicado-destino').value;
+  let lista = Object.values(registros).filter(r=>r.email);
+  if(destino==='presentes') lista = lista.filter(r=>r.presente);
+  if(destino==='pendientes') lista = lista.filter(r=>!r.presente);
+  if(!lista.length){ statusEl.style.color='#A32D2D'; statusEl.textContent='No hay inscritos con correo para ese filtro.'; return; }
+  if(!confirm(`Se enviará este comunicado a ${lista.length} persona(s). ¿Continuar?`)) return;
+
+  statusEl.style.color='#555';
+  emailjs.init(config.emailjsKey);
+  let enviados=0, fallidos=0;
+  for(let i=0;i<lista.length;i++){
+    const r=lista[i];
+    statusEl.textContent=`Enviando ${i+1}/${lista.length}...`;
+    try{
+      await emailjs.send(config.emailjsService, config.emailjsTemplateAnuncio,{
+        to_name: r.nombre,
+        email: r.email,
+        evento_nombre: config.nombre,
+        evento_fecha: config.fecha,
+        organizacion: r.org||'',
+        cargo: r.cargo||'',
+        mensaje: mensaje
+      });
+      enviados++;
+    }catch(e){ fallidos++; }
+    await new Promise(res=>setTimeout(res,350));
+  }
+  statusEl.style.color='#0F6E56';
+  statusEl.textContent=`✅ Comunicado enviado a ${enviados}${fallidos?` · ❌ Fallidos: ${fallidos}`:''}`;
 };
 
 let importData = [];
