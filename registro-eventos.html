@@ -180,6 +180,16 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--color-ac
   #badge-print-area{display:block;position:fixed;top:0;left:0;width:100%}
   .badge-card{border:none;margin:20px auto}
 }
+
+/* Modal de edición de registro */
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:1000;align-items:flex-start;justify-content:center;overflow-y:auto;padding:24px 12px}
+.modal-overlay.open{display:flex}
+.modal-box{background:#fff;border-radius:14px;max-width:480px;width:100%;padding:20px;margin-top:20px}
+.modal-box h3{font-size:16px;margin-bottom:14px}
+.modal-box .form-group{margin-bottom:10px}
+.modal-box label{font-size:12px;color:#555;display:block;margin-bottom:4px}
+.modal-box input, .modal-box select, .modal-box textarea{width:100%;padding:9px 11px;border:0.5px solid rgba(0,0,0,.15);border-radius:8px;font-size:14px;font-family:inherit}
+.modal-actions{display:flex;gap:8px;justify-content:flex-end;margin-top:16px}
 </style>
 </head>
 <body>
@@ -743,6 +753,27 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--color-ac
   <button class="btn-back" style="margin-top:1rem" onclick="goTo('screen-intro')">← Salir del panel</button>
 </div>
 
+</div>
+
+<!-- MODAL DE EDICIÓN DE REGISTRO -->
+<div id="modal-editar" class="modal-overlay">
+  <div class="modal-box">
+    <h3>✏️ Editar participante</h3>
+    <div class="form-group"><label>Nombre completo</label><input type="text" id="edit-nombre"></div>
+    <div class="form-group"><label>Cédula o ID</label><input type="text" id="edit-cedula"></div>
+    <div class="form-group"><label>Teléfono</label><input type="text" id="edit-telefono"></div>
+    <div class="form-group"><label>Correo electrónico</label><input type="email" id="edit-email"></div>
+    <div class="form-group"><label>Cargo o rol</label><input type="text" id="edit-cargo"></div>
+    <div class="form-group"><label>Empresa / Institución</label><input type="text" id="edit-org"></div>
+    <div class="form-group"><label>Ciudad o municipio</label><input type="text" id="edit-ciudad"></div>
+    <div class="form-group"><label>Institución educativa</label><input type="text" id="edit-institucion"></div>
+    <div class="form-group"><label>Comentario o pregunta</label><textarea id="edit-comentario" rows="2"></textarea></div>
+    <div id="modal-editar-error" style="color:#A32D2D;font-size:12px;display:none;margin-bottom:6px"></div>
+    <div class="modal-actions">
+      <button class="btn-outline" onclick="cerrarEditar()">Cancelar</button>
+      <button class="btn-primary" onclick="guardarEdicion()">Guardar cambios</button>
+    </div>
+  </div>
 </div>
 
 <!-- ÁREA DE IMPRESIÓN DE GAFETE (oculta, solo visible al imprimir) -->
@@ -1312,6 +1343,7 @@ window.renderLista=function(){
       </div>
       <div class="reg-actions">
         <span class="badge ${r.presente?'badge-presente':'badge-pendiente'}">${r.presente?'Presente':'Pendiente'}</span>
+        <button class="btn-sm btn-outline" onclick="abrirEditar('${k}')">✏️</button>
         <button class="btn-sm btn-red" onclick="eliminarRegistro('${k}')">✕</button>
       </div>
     </div>`).join('');
@@ -1364,6 +1396,54 @@ window.renderAsistencia=function(){
 
 window.togglePresente=async(key,val)=>{ await update(ref(db,`${basePath}/registros/${key}`),{presente:val}); };
 window.eliminarRegistro=async function(key){ if(confirm('¿Eliminar este registro?')) await remove(ref(db,`${basePath}/registros/${key}`)); };
+
+let editandoKey = null;
+
+window.abrirEditar=function(key){
+  const r = registros[key];
+  if(!r){ return; }
+  editandoKey = key;
+  document.getElementById('edit-nombre').value = r.nombre||'';
+  document.getElementById('edit-cedula').value = r.cedula||'';
+  document.getElementById('edit-telefono').value = r.telefono||'';
+  document.getElementById('edit-email').value = r.email||'';
+  document.getElementById('edit-cargo').value = r.cargo||'';
+  document.getElementById('edit-org').value = r.org||'';
+  document.getElementById('edit-ciudad').value = r.ciudad||'';
+  document.getElementById('edit-institucion').value = r.institucion||'';
+  document.getElementById('edit-comentario').value = r.comentario||'';
+  document.getElementById('modal-editar-error').style.display='none';
+  document.getElementById('modal-editar').classList.add('open');
+};
+
+window.cerrarEditar=function(){
+  document.getElementById('modal-editar').classList.remove('open');
+  editandoKey = null;
+};
+
+window.guardarEdicion=async function(){
+  if(!editandoKey) return;
+  const nombre = document.getElementById('edit-nombre').value.trim();
+  const errEl = document.getElementById('modal-editar-error');
+  if(!nombre){ errEl.textContent='El nombre no puede quedar vacío.'; errEl.style.display='block'; return; }
+  try{
+    await update(ref(db,`${basePath}/registros/${editandoKey}`),{
+      nombre,
+      cedula: document.getElementById('edit-cedula').value.trim(),
+      telefono: document.getElementById('edit-telefono').value.trim(),
+      email: document.getElementById('edit-email').value.trim(),
+      cargo: document.getElementById('edit-cargo').value.trim(),
+      org: document.getElementById('edit-org').value.trim(),
+      ciudad: document.getElementById('edit-ciudad').value.trim(),
+      institucion: document.getElementById('edit-institucion').value.trim(),
+      comentario: document.getElementById('edit-comentario').value.trim()
+    });
+    cerrarEditar();
+  }catch(e){
+    errEl.textContent='No se pudo guardar: '+(e.message||e.code);
+    errEl.style.display='block';
+  }
+};
 
 window.imprimirGafete=function(key){
   const r = registros[key];
